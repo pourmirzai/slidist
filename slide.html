@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>مولد اسلاید هوشمند</title>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        /* --- General & Animated Background --- */
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --bg-light: #f8f9fa;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            text-align: center;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- Main Container & UI Elements --- */
+        .container { max-width: 1100px; margin: 20px auto; background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(10px); padding: 30px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); border: 1px solid rgba(255, 255, 255, 0.18); }
+        h1 { margin-bottom: 25px; color: #1a237e; }
+        
+        /* --- Accordion Styling --- */
+        details {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+        details[open] { background: white; }
+        summary {
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            padding: 15px 20px;
+            list-style: none; /* Remove default marker */
+            position: relative;
+        }
+        summary::before {
+            content: '◀';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+        details[open] > summary::before {
+            transform: translateY(-50%) rotate(-90deg);
+        }
+        .details-content { padding: 0 20px 20px; }
+
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px 25px; align-items: flex-start; }
+        .control-item { display: flex; flex-direction: column; align-items: flex-start; }
+        label { margin-bottom: 5px; font-size: 14px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .full-width { grid-column: 1 / -1; }
+
+        /* --- Color Theme Selector --- */
+        #theme-selector { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; justify-content: center; }
+        .theme-preview {
+            cursor: pointer; border: 2px solid transparent; border-radius: 8px; padding: 5px; transition: all 0.2s ease;
+            display: flex; flex-direction: column; align-items: center; width: 120px;
+        }
+        .theme-preview.selected { border-color: var(--primary-color); box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); }
+        .theme-preview .colors { width: 100%; height: 40px; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #ccc; }
+        .theme-preview .colors .text-sample { font-size: 18px; font-weight: bold; }
+        .theme-preview .theme-name { font-size: 12px; margin-top: 5px; }
+
+        #customColorControls { display: none; }
+        #customBulletInput { display: none; margin-top: 10px; }
+        .checkbox-control { flex-direction: row; align-items: center; gap: 10px; }
+
+        /* --- Main Button & Textarea --- */
+        textarea { width: 98%; height: 150px; margin: 10px 0 20px; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; resize: vertical; }
+        button { padding: 14px 35px; font-size: 18px; cursor: pointer; border: none; border-radius: 8px; background-color: var(--primary-color); color: white; transition: all 0.3s; }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 15px var(--shadow-color); }
+
+        /* --- Preview & Lightbox --- */
+        #preview { margin-top: 30px; }
+        .preview-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .preview-container img { max-width: 200px; border: 2px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 8px var(--shadow-color); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .preview-container img:hover { transform: scale(1.05); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .lightbox { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; }
+        .lightbox.show { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; }
+        .lightbox .close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: white; cursor: pointer; transition: color 0.2s; }
+        .lightbox .close:hover { color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>مولد اسلاید هوشمند</h1>
+
+        <details open>
+            <summary>۱. تنظیمات اسلاید عنوان</summary>
+            <div class="details-content controls">
+                <div class="control-item full-width"><label for="titleText">عنوان اصلی:</label><input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..."></div>
+                <div class="control-item full-width"><label for="subtitleText">زیرنویس (اختیاری):</label><input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..."></div>
+                
+                <div class="control-item"><label for="authorImageFile">عکس نویسنده (اختیاری):</label><input type="file" id="authorImageFile" accept="image/*">
+                    <div id="authorDropZone" style="border:1px dashed #aaa; border-radius:8px; padding:10px; margin-top:5px; cursor:pointer;">یا تصویر را اینجا بکشید و رها کنید</div>
+                </div>
+                <div class="control-item"><label for="bgImageFile">تصویر پس‌زمینه:</label><input type="file" id="bgImageFile" accept="image/*">
+                    <div id="bgDropZone" style="border:1px dashed #aaa; border-radius:8px; padding:10px; margin-top:5px; cursor:pointer;">یا تصویر را اینجا بکشید و رها کنید</div>
+                </div>
+                <div class="control-item"><label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label><input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"></div>
+                <div class="control-item"><label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
+                    <select id="bgImageMode">
+                        <option value="cover-center">وسط وسط (Cover)</option>
+                        <option value="cover-top">وسط بالا (Cover)</option>
+                        <option value="contain">تمام تصویر (Contain)</option>
+                    </select>
+                </div>
+            </div>
+        </details>
+
+        <details open>
+            <summary>۲. تنظیمات کلی و استایل</summary>
+            <div class="details-content controls">
+                <div class="control-item"><label for="fontSize">اندازه فونت متن:</label><input type="number" id="fontSize" value="30"></div>
+                <div class="control-item"><label for="lineHeight">فاصله خطوط:</label><input type="number" id="lineHeight" value="2" step="0.1"></div>
+                <div class="control-item"><label for="padding">حاشیه داخلی:</label><input type="number" id="padding" value="90"></div>
+                <div class="control-item"><label for="footerText">متن فوتر (اختیاری):</label><input type="text" id="footerText" placeholder="مثلا: @YourPage"></div>
+                
+                <div class="control-item full-width">
+                    <label>تم رنگی:</label>
+                    <div id="theme-selector"></div>
+                </div>
+
+                <div id="customColorControls" class="full-width controls">
+                    <div class="control-item"><label for="bgColor1">رنگ پس‌زمینه ۱:</label><input type="color" id="bgColor1"></div>
+                    <div class="control-item"><label for="bgColor2">رنگ پس‌زمینه ۲:</label><input type="color" id="bgColor2"></div>
+                    <div class="control-item"><label for="textColor">رنگ متن:</label><input type="color" id="textColor"></div>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>۳. تنظیمات محتوا و بولت‌ها</summary>
+            <div class="details-content controls">
+                <div class="control-item checkbox-control">
+                    <input type="checkbox" id="useBullets" style="width: 25px; height: 25px;" checked>
+                    <label for="useBullets">استفاده از بولت</label>
+                </div>
+                <div class="control-item">
+                    <label for="bulletSelect">انتخاب نوع بولت:</label>
+                    <select id="bulletSelect">
+                        <option value="✅">✅ تیک سبز</option>
+                        <option value="🔹">🔹 لوزی آبی</option>
+                        <option value="⚫️">⚫️ دایره سیاه</option>
+                        <option value="➡️">➡️ فلش</option>
+                        <option value="custom">سفارشی...</option>
+                    </select>
+                    <input type="text" id="customBulletInput" placeholder="بولت سفارشی">
+                </div>
+            </div>
+        </details>
+
+        <textarea id="inputText" placeholder="متن خود را اینجا وارد کنید.&#x0a;## برای تیتر بزرگ&#x0a;### برای تیتر بزرگ در اسلاید جدید&#x0a;می‌توانید از ایموجی 😊 و Markdown *bold* یا _italic_ استفاده کنید."></textarea><br>
+        <button onclick="previewSlides()">ایجاد پیش‌نمایش</button>
+        <div id="preview"></div>
+    </div>
+
+    <div class="lightbox" id="lightbox"><span class="close" id="closeLightbox">&times;</span><img src="" alt="بزرگنمایی اسلاید" id="lightboxImg"></div>
+
+<script>
+    // --- Global State ---
+    let generatedSlides = [];
+    let backgroundImage = null;
+    let authorImage = null;
+
+    // --- Color Themes Definition ---
+    const colorThemes = {
+    minimal_clean: { name: 'مینیمال روشن', bg1: '#f5f5f5', bg2: '#e0e0e0', text: '#212121', primary: '#007bff' },
+    modern_slate: { name: 'مدرن خاکستری', bg1: '#eceff1', bg2: '#cfd8dc', text: '#37474f', primary: '#007bff' },
+    light_pink_blue: { name: 'صورتی به آبی', bg1: '#FFDEE9', bg2: '#B5FFFC', text: '#000000', primary: '#23a6d5' },
+    light_yellow_green: { name: 'زرد به سبز', bg1: '#FEF9C3', bg2: '#C1FFD7', text: '#000000', primary: '#23d5ab' },
+    light_cream_white: { name: 'کرمی به سفید', bg1: '#FFEFBA', bg2: '#FFFFFF', text: '#000000', primary: '#e73c7e' },
+    light_sky_mist: { name: 'آبی آسمانی', bg1: '#E0EAFC', bg2: '#CFDEF3', text: '#1A1A2E', primary: '#23a6d5' },
+    light_gold_orange: { name: 'طلایی به نارنجی', bg1: '#FDEB71', bg2: '#F8D800', text: '#000000', primary: '#F8D800' },
+    dark_grey_matte: { name: 'خاکستری مات', bg1: '#232526', bg2: '#414345', text: '#FFFFFF', primary: '#007bff' },
+    dark_indigo_deep: { name: 'نیلی عمیق', bg1: '#0F2027', bg2: '#203A43', text: '#FFFFFF', primary: '#007bff' },
+    dark_blue_petrol: { name: 'آبی نفتی', bg1: '#141E30', bg2: '#243B55', text: '#FFFFFF', primary: '#23a6d5' },
+    dark_black_blue_grey: { name: 'مشکی به آبی', bg1: '#0B0F17', bg2: '#2C5364', text: '#FFFFFF', primary: '#23a6d5' },
+    dark_purple_indigo: { name: 'بنفش به نیلی', bg1: '#2B1055', bg2: '#7597DE', text: '#FFFFFF', primary: '#e73c7e' },
+    custom: { name: 'سفارشی', bg1: '#ffffff', bg2: '#e0e0e0', text: '#000000', primary: '#007bff' },
+};
+
+    // --- Utility Functions ---
+    const toPersianNum = num => num.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    const getTextWidth = (ctx, text, font) => (ctx.font = font, ctx.measureText(text).width);
+
+    // --- Event Handling & UI ---
+    function setupEventListeners() {
+        document.getElementById('bgImageFile').addEventListener('change', (e) => handleImageUpload(e, 'background'));
+        document.getElementById('authorImageFile').addEventListener('change', (e) => handleImageUpload(e, 'author'));
+        document.getElementById('bgImageOpacity').addEventListener('input', e => document.getElementById('opacityValue').textContent = e.target.value);
+        
+        document.getElementById('inputText').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('fontSize').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('padding').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('lineHeight').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('bgColor1').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('bgColor2').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('textColor').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('useBullets').addEventListener('change', saveSettingsToLocalStorage);
+        document.getElementById('bulletSelect').addEventListener('change', saveSettingsToLocalStorage);
+        document.getElementById('customBulletInput').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('titleText').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('subtitleText').addEventListener('input', saveSettingsToLocalStorage);
+        document.getElementById('footerText').addEventListener('input', saveSettingsToLocalStorage);
+        
+        const bulletSelect = document.getElementById('bulletSelect');
+        const customBulletInput = document.getElementById('customBulletInput');
+        bulletSelect.addEventListener('change', () => customBulletInput.style.display = (bulletSelect.value === 'custom') ? 'block' : 'none');
+
+        const lightbox = document.getElementById('lightbox');
+        document.getElementById('closeLightbox').addEventListener('click', () => lightbox.classList.remove('show'));
+        lightbox.addEventListener('click', (e) => e.target === lightbox && lightbox.classList.remove('show'));
+        document.getElementById('preview').addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG') {
+                document.getElementById('lightboxImg').src = e.target.src;
+                lightbox.classList.add('show');
+            }
+        });
+        
+        setupThemeSelector();
+        setupImageDropZones();
+        loadSettingsFromLocalStorage();
+    }
+
+    function setupThemeSelector() {
+        const selector = document.getElementById('theme-selector');
+        selector.innerHTML = '';
+        for (const key in colorThemes) {
+            const theme = colorThemes[key];
+            const div = document.createElement('div');
+            div.className = 'theme-preview';
+            div.dataset.themeKey = key;
+            div.innerHTML = `
+                <div class="colors" style="background: linear-gradient(45deg, ${theme.bg1}, ${theme.bg2});">
+                    <span class="text-sample" style="color: ${theme.text};">Aa</span>
+                </div>
+                <span class="theme-name">${theme.name}</span>
+            `;
+            div.addEventListener('click', () => applyColorTheme(key));
+            selector.appendChild(div);
+        }
+        applyColorTheme('minimal_clean'); // Set a default theme
+    }
+    
+    function applyColorTheme(key) {
+        document.querySelectorAll('.theme-preview').forEach(el => el.classList.remove('selected'));
+        document.querySelector(`.theme-preview[data-theme-key="${key}"]`).classList.add('selected');
+
+        const theme = colorThemes[key];
+        const customControls = document.getElementById('customColorControls');
+        customControls.style.display = (key === 'custom') ? 'grid' : 'none';
+
+        if (key !== 'custom') {
+            document.getElementById('bgColor1').value = theme.bg1;
+            document.getElementById('bgColor2').value = theme.bg2;
+            document.getElementById('textColor').value = theme.text;
+        }
+    }
+
+    function handleImageUpload(event, imageType) {
+    if (event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                if (imageType === 'background') backgroundImage = img;
+                else if (imageType === 'author') authorImage = img;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    } else {
+        if (imageType === 'background') backgroundImage = null;
+        else if (imageType === 'author') authorImage = null;
+    }
+}
+
+    // --- LocalStorage: ذخیره و بازیابی تنظیمات ---
+    function saveSettingsToLocalStorage() {
+        localStorage.setItem('slideGenSettings', JSON.stringify(getSettings()));
+    }
+    function loadSettingsFromLocalStorage() {
+        const saved = localStorage.getItem('slideGenSettings');
+        if (!saved) return;
+        try {
+            const s = JSON.parse(saved);
+            document.getElementById('fontSize').value = s.fontSize || 30;
+            document.getElementById('padding').value = s.padding || 90;
+            document.getElementById('lineHeight').value = s.lineHeightMultiplier || 2;
+            document.getElementById('bgColor1').value = s.bgColor1 || '#f5f5f5';
+            document.getElementById('bgColor2').value = s.bgColor2 || '#e0e0e0';
+            document.getElementById('textColor').value = s.textColor || '#212121';
+            document.getElementById('useBullets').checked = !!s.useBullets;
+            document.getElementById('bulletSelect').value = s.bulletChar || '✅';
+            document.getElementById('customBulletInput').value = s.bulletChar || '';
+            document.getElementById('inputText').value = s.text || '';
+            document.getElementById('titleText').value = s.titleText || '';
+            document.getElementById('subtitleText').value = s.subtitleText || '';
+            document.getElementById('footerText').value = s.footerText || '';
+            document.getElementById('bgImageOpacity').value = s.bgOpacity || 0.3;
+            
+        } catch {}
+    }
+    // --- Drag & Drop برای تصاویر ---
+    function setupImageDropZones() {
+        function setupDrop(zoneId, inputId, type) {
+            const zone = document.getElementById(zoneId);
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = '#e0e0e0'; });
+            zone.addEventListener('dragleave', e => { zone.style.background = ''; });
+            zone.addEventListener('drop', e => {
+                e.preventDefault(); zone.style.background = '';
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    document.getElementById(inputId).files = e.dataTransfer.files;
+                    handleImageUpload({ target: { files: e.dataTransfer.files } }, type);
+                }
+            });
+        }
+        setupDrop('authorDropZone', 'authorImageFile', 'author');
+        setupDrop('bgDropZone', 'bgImageFile', 'background');
+    }
+    // --- Markdown ساده برای بولد ---
+    function parseMarkdown(text) {
+    if (!text) return [];
+    let html = marked.parseInline(text);
+    let result = [];
+    let regex = /(<strong>(.*?)<\/strong>)|(<b>(.*?)<\/b>)|(<em>(.*?)<\/em>)|(<i>(.*?)<\/i>)/gi;
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+        if (match.index > lastIndex) {
+            let plain = html.slice(lastIndex, match.index).replace(/<[^>]+>/g, '');
+            if (plain) result.push({ text: plain, bold: false });
+        }
+        // متن بولد یا ایتالیک
+        let boldText = match[2] || match[4] || match[6] || match[8] || '';
+        boldText = boldText.replace(/<[^>]+>/g, '');
+        if (boldText) result.push({ text: boldText, bold: true });
+        lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < html.length) {
+        let plain = html.slice(lastIndex).replace(/<[^>]+>/g, '');
+        if (plain) result.push({ text: plain, bold: false });
+    }
+    return result;
+}
+
+    // --- رسم متن ترکیبی بولد و معمولی روی canvas ---
+    function drawRichText(ctx, parts, x, y, maxWidth, baseFont, color, align) {
+        ctx.save();
+        ctx.font = baseFont;
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        let totalText = '';
+        parts.forEach(p => totalText += p.text);
+        let offsetX = 0;
+        if (align === 'center') {
+            offsetX = -ctx.measureText(totalText).width / 2;
+        } else if (align === 'right') {
+            offsetX = -ctx.measureText(totalText).width;
+        }
+        let curX = x + offsetX;
+        parts.forEach(part => {
+            let font = baseFont.replace(/^bold\s+/i, '');
+            if (part.bold) font = 'bold ' + font;
+            ctx.font = font;
+            ctx.fillText(part.text, curX, y, maxWidth);
+            curX += ctx.measureText(part.text).width;
+        });
+        ctx.restore();
+    }
+    // --- Core Logic: Text Parsing and Pagination ---
+    function textWrap(ctx, text, maxWidth, fontSize) {
+        const words = text.split(' ');
+        let lines = [];
+        let currentLine = '';
+        for (const word of words) {
+            const prospectiveLine = currentLine ? `${currentLine} ${word}` : word;
+            if (getTextWidth(ctx, prospectiveLine, `${fontSize}px Vazirmatn`) > maxWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = prospectiveLine;
+            }
+        }
+        if (currentLine) lines.push(currentLine);
+        return lines;
+    }
+
+    function parseAndStructureContent(settings) {
+        const { text, useBullets, bulletChar, fontSize, padding, lineHeightMultiplier } = settings;
+        const tempCtx = document.createElement('canvas').getContext('2d');
+        const contentWidth = 1080 - 2 * padding;
+        
+        // 1. Create a flat list of all individual drawable lines
+        let allLines = [];
+        const rawLines = text.split('\n');
+
+        rawLines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('### ')) {
+                allLines.push({ type: 'heading', text: trimmedLine.substring(4), level: 3 });
+            } else if (trimmedLine.startsWith('## ')) {
+                allLines.push({ type: 'heading', text: trimmedLine.substring(3), level: 2 });
+            } else if (trimmedLine !== '') {
+                let effectiveWidth = contentWidth;
+                if (useBullets) {
+                    effectiveWidth -= getTextWidth(tempCtx, `${bulletChar} `, `${fontSize}px Vazirmatn`);
+                }
+                const wrappedLines = textWrap(tempCtx, trimmedLine, effectiveWidth, fontSize);
+                
+                wrappedLines.forEach((paraLine, index) => {
+                    allLines.push({ 
+                        type: 'body', 
+                        text: paraLine, 
+                        isFirstLineOfPara: index === 0, 
+                        useBullet: useBullets 
+                    });
+                });
+                allLines.push({ type: 'spacer' });
+            }
+        });
+
+        // 2. Paginate the flat list of lines
+        const finalSlides = [];
+        if (allLines.length === 0) return finalSlides;
+
+        let currentSlide = [];
+        const maxContentHeight = 1080 - padding - 80; // Max Y position for content
+        let y = padding;
+
+        const getItemHeight = (item) => {
+            if (item.type === 'heading') return fontSize * 1.2 * lineHeightMultiplier;
+            if (item.type === 'spacer') return fontSize * 0.5;
+            return fontSize * lineHeightMultiplier;
+        };
+
+        for (const line of allLines) {
+            if (line.type === 'heading' && line.level === 3) {
+                if (currentSlide.length > 0) finalSlides.push(currentSlide);
+                currentSlide = [line];
+                y = padding + getItemHeight(line);
+                continue;
+            }
+
+            const itemHeight = getItemHeight(line);
+            if (y + itemHeight > maxContentHeight && currentSlide.length > 0) {
+                finalSlides.push(currentSlide);
+                currentSlide = [line];
+                y = padding + itemHeight;
+            } else {
+                currentSlide.push(line);
+                y += itemHeight;
+            }
+        }
+
+        if (currentSlide.length > 0) finalSlides.push(currentSlide);
+        
+        return finalSlides;
+    }
+
+    // --- Core Logic: Slide Drawing ---
+    async function createSlide(slideContent, totalSlides, currentSlideIndex, settings) {
+        const { fontSize, padding, lineHeightMultiplier, bgColor1, bgColor2, textColor, titleText, subtitleText, footerText, bgImage, bgOpacity, authImage, bulletChar, titleTemplate } = settings;
+        const slideSize = 1080;
+        const canvas = document.createElement('canvas');
+        canvas.width = slideSize; canvas.height = slideSize;
+        const ctx = canvas.getContext('2d');
+        
+        // theme برای رنگ‌های سفارشی
+        const themeKey = document.querySelector('.theme-preview.selected')?.dataset.themeKey || 'minimal_clean';
+        const theme = colorThemes[themeKey] || colorThemes['minimal_clean'];
+        // Draw Background
+        if (bgColor1 !== bgColor2) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, slideSize);
+            gradient.addColorStop(0, bgColor1); gradient.addColorStop(1, bgColor2);
+            ctx.fillStyle = gradient;
+        } else {
+            ctx.fillStyle = bgColor1;
+        }
+        ctx.fillRect(0, 0, slideSize, slideSize);
+
+        // Draw Background Image (اگر تصویر انتخاب شده و بارگذاری شده باشد)
+        if (slideContent.type === 'title' && bgImage && bgImage.complete) {
+            ctx.globalAlpha = bgOpacity;
+            const mode = document.getElementById('bgImageMode').value || 'cover-center';
+            const params = getBgImageDrawParams(bgImage, slideSize, mode);
+            ctx.drawImage(bgImage, params.sx, params.sy, params.sw, params.sh, params.dx, params.dy, params.dw, params.dh);
+            ctx.globalAlpha = 1.0;
+        }
+
+        ctx.fillStyle = textColor;
+        ctx.direction = 'rtl';
+        const contentWidth = slideSize - 2 * padding;
+        
+        // Draw Content based on slide type
+        if (slideContent.type === 'title') {
+            drawTitleSlide(ctx, { fontSize, contentWidth, authImage, titleText, subtitleText, titleTemplate, theme });
+        } else {
+            drawContentSlide(ctx, { slideContent, padding, fontSize, lineHeightMultiplier, bulletChar });
+        }
+        
+        // Draw Footer
+        drawFooter(ctx, { currentSlideIndex, totalSlides, footerText, padding, fontSize, textColor, theme });
+        
+        return canvas.toDataURL('image/png');
+    }
+
+    // --- تنظیم موقعیت و حالت تصویر پس‌زمینه ---
+    function getBgImageDrawParams(bgImage, slideSize, mode) {
+        // mode: 'cover-top', 'cover-center', 'contain', ...
+        let sx = 0, sy = 0, sw = bgImage.width, sh = bgImage.height;
+        let dx = 0, dy = 0, dw = slideSize, dh = slideSize;
+        if (mode === 'cover-top') {
+            const scale = Math.max(slideSize / bgImage.width, slideSize / bgImage.height);
+            sw = slideSize / scale;
+            sh = slideSize / scale;
+            sx = (bgImage.width - sw) / 2;
+            sy = 0;
+        } else if (mode === 'cover-center') {
+            const scale = Math.max(slideSize / bgImage.width, slideSize / bgImage.height);
+            sw = slideSize / scale;
+            sh = slideSize / scale;
+            sx = (bgImage.width - sw) / 2;
+            sy = (bgImage.height - sh) / 2;
+        } else if (mode === 'contain') {
+            const scale = Math.min(slideSize / bgImage.width, slideSize / bgImage.height);
+            dw = bgImage.width * scale;
+            dh = bgImage.height * scale;
+            dx = (slideSize - dw) / 2;
+            dy = (slideSize - dh) / 2;
+        }
+        return { sx, sy, sw, sh, dx, dy, dw, dh };
+    }
+
+// --- ترسیم محتوای اسلاید (غیر از عنوان) ---
+function drawContentSlide(ctx, { slideContent, padding, fontSize, lineHeightMultiplier, bulletChar }) {
+    const slideSize = 1080;
+    let y = padding;
+    ctx.save();
+    ctx.font = `${fontSize}px Vazirmatn`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.direction = 'rtl';
+
+    for (const item of slideContent) {
+        if (item.type === 'heading') {
+            ctx.font = `bold ${fontSize * 1.2}px Vazirmatn`;
+            ctx.fillText(item.text, slideSize - padding, y);
+            y += fontSize * 1.2 * lineHeightMultiplier;
+            ctx.font = `${fontSize}px Vazirmatn`;
+        } else if (item.type === 'body') {
+            let text = item.text;
+            if (item.useBullet && item.isFirstLineOfPara) {
+                text = `${bulletChar} ${text}`;
+            }
+            ctx.fillText(text, slideSize - padding, y);
+            y += fontSize * lineHeightMultiplier;
+        } else if (item.type === 'spacer') {
+            y += fontSize * 0.5;
+        }
+    }
+    ctx.restore();
+}
+
+// --- ترسیم فوتر اسلاید ---
+function drawFooter(ctx, { currentSlideIndex, totalSlides, footerText, padding, fontSize, textColor, theme }) {
+    const slideSize = 1080;
+    ctx.save();
+    ctx.font = `${fontSize * 0.7}px Vazirmatn`;
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    let footerY = slideSize - padding / 2;
+    if (footerText) {
+        ctx.fillText(footerText, slideSize / 2, footerY);
+        footerY -= fontSize * 0.8;
+    }
+    // شماره اسلاید
+    ctx.font = `${fontSize * 0.6}px Vazirmatn`;
+    ctx.globalAlpha = 0.7;
+    ctx.fillText(`${currentSlideIndex + 1} / ${totalSlides}`, slideSize / 2, slideSize - 20);
+    ctx.globalAlpha = 1.0;
+    // --- نوار پیشرفت ---
+    const barWidth = slideSize - 2 * padding;
+    const barHeight = 12;
+    const progress = (totalSlides > 1) ? (currentSlideIndex + 1) / totalSlides : 1;
+    const barX = padding;
+    const barY = slideSize - 12;
+    // پس‌زمینه نوار
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#888';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = (theme && theme.primary) ? theme.primary : '#007bff';
+    // راست به چپ: نوار از سمت راست پر شود
+    ctx.fillRect(barX + barWidth - (barWidth * progress), barY, barWidth * progress, barHeight);
+    ctx.globalAlpha = 1.0;
+    ctx.restore();
+    // --- پایان نوار پیشرفت ---
+    ctx.restore();
+}
+
+// --- نسخه کامل و صحیح تابع createSlide ---
+    async function createSlide(slideContent, totalSlides, currentSlideIndex, settings) {
+        const { fontSize, padding, lineHeightMultiplier, bgColor1, bgColor2, textColor, titleText, subtitleText, footerText, bgImage, bgOpacity, authImage, bulletChar, titleTemplate } = settings;
+        const slideSize = 1080;
+        const canvas = document.createElement('canvas');
+        canvas.width = slideSize; canvas.height = slideSize;
+        const ctx = canvas.getContext('2d');
+        // Draw Background
+        if (bgColor1 !== bgColor2) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, slideSize);
+            gradient.addColorStop(0, bgColor1); gradient.addColorStop(1, bgColor2);
+            ctx.fillStyle = gradient;
+        } else {
+            ctx.fillStyle = bgColor1;
+        }
+        ctx.fillRect(0, 0, slideSize, slideSize);
+
+        // Draw Background Image (اگر تصویر انتخاب شده و بارگذاری شده باشد)
+        if (slideContent.type === 'title' && bgImage && bgImage.complete) {
+            ctx.globalAlpha = bgOpacity;
+            const mode = document.getElementById('bgImageMode').value || 'cover-center';
+            const params = getBgImageDrawParams(bgImage, slideSize, mode);
+            ctx.drawImage(bgImage, params.sx, params.sy, params.sw, params.sh, params.dx, params.dy, params.dw, params.dh);
+            ctx.globalAlpha = 1.0;
+        }
+
+        ctx.fillStyle = textColor;
+        ctx.direction = 'rtl';
+        const contentWidth = slideSize - 2 * padding;
+
+        // Draw Content based on slide type
+        if (slideContent.type === 'title') {
+            drawTitleSlide(ctx, { fontSize, contentWidth, authImage: (authImage && authImage.complete) ? authImage : null, titleText, subtitleText, titleTemplate });
+        } else {
+            drawContentSlide(ctx, { slideContent, padding, fontSize, lineHeightMultiplier, bulletChar });
+        }
+
+        // Draw Footer
+        drawFooter(ctx, { currentSlideIndex, totalSlides, footerText, padding, fontSize, textColor });
+
+        return canvas.toDataURL('image/png');
+    }
+
+
+    
+
+    // --- اصلاح drawTitleSlide برای جلوگیری از افتادن متن بیرون ---
+    function drawTitleSlide(ctx, { fontSize, contentWidth, authImage, titleText, subtitleText, theme }) {
+        theme = theme || { primary: '#007bff' };
+        const slideSize = 1080;
+        let currentY = subtitleText ? slideSize / 2 - 50 : slideSize / 2;
+        let titleParts = parseMarkdown(titleText);
+        let subtitleParts = parseMarkdown(subtitleText);
+        // --- رسم عکس نویسنده بالای عنوان (وسط‌چین) ---
+        if (authImage) {
+            const imgSize = 300;
+            const imgX = slideSize / 2 - imgSize / 2;
+            const imgY = currentY - imgSize - 10; // فاصله مناسب بالای عنوان
+            // محاسبه crop برای cover
+            const imgRatio = authImage.width / authImage.height;
+            let sx, sy, sWidth, sHeight;
+            if (imgRatio > 1) {
+                // افقی: از وسط عرض crop کن
+                sHeight = authImage.height;
+                sWidth = sHeight;
+                sx = (authImage.width - sWidth) / 2;
+                sy = 0;
+            } else {
+                // عمودی یا مربعی: از وسط ارتفاع crop کن
+                sWidth = authImage.width;
+                sHeight = sWidth;
+                sx = 0;
+                sy = (authImage.height - sHeight) / 2;
+            }
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(slideSize / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(authImage, sx, sy, sWidth, sHeight, imgX, imgY, imgSize, imgSize);
+            ctx.restore();
+            currentY += imgSize / 2 + 15;
+        }
+        // عنوان وسط‌چین
+        ctx.font = `bold ${fontSize * 1.5}px Vazirmatn`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#212121';
+        const titleWidth = ctx.measureText(titleText).width;
+        const titleX = slideSize / 2 - titleWidth / 2;
+        drawRichText(ctx, titleParts, titleX, currentY, undefined, `bold ${fontSize * 1.5}px Vazirmatn`, '#212121', 'left');
+        // خط جداکننده وسط
+        ctx.strokeStyle = '#212121';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(slideSize / 2 - 100, currentY + 35);
+        ctx.lineTo(slideSize / 2 + 100, currentY + 35);
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+        // زیرنویس وسط‌چین نزدیک خط
+        if (subtitleText) {
+            ctx.font = `${fontSize * 0.8}px Vazirmatn`;
+            const subtitleWidth = ctx.measureText(subtitleText).width;
+            const subtitleX = slideSize / 2 - subtitleWidth / 2;
+            drawRichText(ctx, subtitleParts, subtitleX, currentY + 70, undefined, `${fontSize * 0.8}px Vazirmatn`, '#212121', 'left');
+        }
+    }
+
+
+    // --- Main Functions ---
+    function getSettings() {
+        const bulletSelect = document.getElementById('bulletSelect');
+        let bulletChar = bulletSelect.value;
+        if (bulletChar === 'custom') bulletChar = document.getElementById('customBulletInput').value || '•';
+        return {
+            fontSize: parseInt(document.getElementById('fontSize').value),
+            padding: parseInt(document.getElementById('padding').value),
+            lineHeightMultiplier: parseFloat(document.getElementById('lineHeight').value),
+            bgColor1: document.getElementById('bgColor1').value,
+            bgColor2: document.getElementById('bgColor2').value,
+            textColor: document.getElementById('textColor').value,
+            useBullets: document.getElementById('useBullets').checked,
+            bulletChar: bulletChar,
+            text: document.getElementById('inputText').value,
+            titleText: document.getElementById('titleText').value.trim(),
+            subtitleText: document.getElementById('subtitleText').value.trim(),
+            footerText: document.getElementById('footerText').value.trim(),
+            bgImage: backgroundImage,
+            authImage: authorImage,
+            bgOpacity: parseFloat(document.getElementById('bgImageOpacity').value),
+            
+        };
+    }
+
+    async function previewSlides() {
+        const settings = getSettings();
+        if (!settings.text.trim() && !settings.titleText) {
+            alert('لطفاً عنوان یا متنی را وارد کنید.'); return;
+        }
+
+        generatedSlides = parseAndStructureContent(settings);
+        if (settings.titleText) {
+            generatedSlides.unshift({ type: 'title' });
+        }
+        
+        const previewDiv = document.getElementById('preview');
+        if (generatedSlides.length === 0) {
+            previewDiv.innerHTML = '<p>محتوایی برای نمایش وجود ندارد.</p>'; return;
+        }
+        
+        previewDiv.innerHTML = `<h3>در حال ساخت پیش‌نمایش...</h3>`;
+        let slidePreviewsHTML = '';
+        const previewLimit = Math.min(5, generatedSlides.length);
+
+        for (let i = 0; i < previewLimit; i++) {
+            // اگر اسلاید نوع title است و تصویر پس‌زمینه انتخاب شده اما هنوز بارگذاری نشده، صبر کن
+            if (generatedSlides[i].type === 'title' && settings.bgImage && !settings.bgImage.complete) {
+                previewDiv.innerHTML = '<p>در حال بارگذاری تصویر پس‌زمینه، لطفا چند ثانیه صبر کنید و دوباره تلاش کنید.</p>';
+                return;
+            }
+            if (generatedSlides[i].type === 'title' && settings.authImage && !settings.authImage.complete) {
+                previewDiv.innerHTML = '<p>در حال بارگذاری تصویر نویسنده، لطفا چند ثانیه صبر کنید و دوباره تلاش کنید.</p>';
+                return;
+            }
+            const dataURL = await createSlide(generatedSlides[i], generatedSlides.length, i, settings);
+            slidePreviewsHTML += `<img src="${dataURL}" alt="پیش‌نمایش اسلاید ${i+1}">`;
+        }
+        
+        previewDiv.innerHTML = `
+            <h2>پیش‌نمایش ( ${toPersianNum(previewLimit)} اسلاید از ${toPersianNum(generatedSlides.length)} )</h2>
+            <p>برای بزرگنمایی روی هر اسلاید کلیک کنید.</p>
+            <div class="preview-container">${slidePreviewsHTML}</div><br><br>
+            <button onclick="downloadAllSlides()">✅ تأیید و دانلود همه (${toPersianNum(generatedSlides.length)}) اسلاید</button>
+        `;
+    }
+
+    async function downloadAllSlides() {
+        if (generatedSlides.length === 0) { alert('ابتدا یک پیش‌نمایش ایجاد کنید.'); return; }
+        const settings = getSettings();
+        const button = document.querySelector('button[onclick="downloadAllSlides()"]');
+        const originalText = button.innerHTML;
+        
+        for (let i = 0; i < generatedSlides.length; i++) {
+            button.innerHTML = `در حال آماده‌سازی اسلاید ${toPersianNum(i + 1)}...`;
+            const dataURL = await createSlide(generatedSlides[i], generatedSlides.length, i, settings);
+            saveAs(dataURL, `slide_${i + 1}.png`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        button.innerHTML = originalText;
+    }
+
+    window.onload = setupEventListeners;
+</script>
+</body>
+</html>
