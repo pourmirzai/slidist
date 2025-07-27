@@ -5,12 +5,12 @@ import { getTextWidth } from './utils.js';
 export class TextProcessor {
     constructor() {
         this.markdownPatterns = {
-            bold: /\*\*(.*?)\*\*/g,
-            italic: /\*(.*?)\*/g,
-            underline: /__(.*?)__/g,
-            strikethrough: /~~(.*?)~~/g,
-            code: /`(.*?)`/g,
-            highlight: /==(.*?)==/g
+            bold: /\*\*([^*]+)\*\*/g,
+            italic: /(?<!\*)\*([^*]+)\*(?!\*)/g,
+            underline: /__([^_]+)__/g,
+            strikethrough: /~~([^~]+)~~/g,
+            code: /`([^`]+)`/g,
+            highlight: /==([^=]+)==/g
         };
     }
 
@@ -21,17 +21,62 @@ export class TextProcessor {
         if (!text) return [];
         
         let result = [];
-        let currentIndex = 0;
+        let processedText = text;
         
-        // Find all markdown patterns
-        const matches = [];
+        // Process bold first to avoid conflicts with italic
+        const boldMatches = [];
+        let boldMatch;
+        const boldRegex = /\*\*([^*]+)\*\*/g;
         
-        for (const [type, pattern] of Object.entries(this.markdownPatterns)) {
+        while ((boldMatch = boldRegex.exec(text)) !== null) {
+            boldMatches.push({
+                type: 'bold',
+                start: boldMatch.index,
+                end: boldMatch.index + boldMatch[0].length,
+                content: boldMatch[1],
+                fullMatch: boldMatch[0]
+            });
+        }
+        
+        // Process italic, avoiding bold regions
+        const italicMatches = [];
+        let italicMatch;
+        const italicRegex = /(?<!\*)\*([^*]+)\*(?!\*)/g;
+        
+        while ((italicMatch = italicRegex.exec(text)) !== null) {
+            // Check if this italic match overlaps with any bold match
+            const overlapsWithBold = boldMatches.some(bold => 
+                (italicMatch.index >= bold.start && italicMatch.index < bold.end) ||
+                (italicMatch.index + italicMatch[0].length > bold.start && italicMatch.index + italicMatch[0].length <= bold.end) ||
+                (italicMatch.index < bold.start && italicMatch.index + italicMatch[0].length > bold.end)
+            );
+            
+            if (!overlapsWithBold) {
+                italicMatches.push({
+                    type: 'italic',
+                    start: italicMatch.index,
+                    end: italicMatch.index + italicMatch[0].length,
+                    content: italicMatch[1],
+                    fullMatch: italicMatch[0]
+                });
+            }
+        }
+        
+        // Process other patterns
+        const otherMatches = [];
+        const otherPatterns = {
+            underline: /__([^_]+)__/g,
+            strikethrough: /~~([^~]+)~~/g,
+            code: /`([^`]+)`/g,
+            highlight: /==([^=]+)==/g
+        };
+        
+        for (const [type, pattern] of Object.entries(otherPatterns)) {
             let match;
             const regex = new RegExp(pattern.source, pattern.flags);
             
             while ((match = regex.exec(text)) !== null) {
-                matches.push({
+                otherMatches.push({
                     type,
                     start: match.index,
                     end: match.index + match[0].length,
@@ -41,11 +86,13 @@ export class TextProcessor {
             }
         }
         
-        // Sort matches by position
-        matches.sort((a, b) => a.start - b.start);
+        // Combine all matches and sort by position
+        const allMatches = [...boldMatches, ...italicMatches, ...otherMatches];
+        allMatches.sort((a, b) => a.start - b.start);
         
         // Process text with formatting
-        for (const match of matches) {
+        let currentIndex = 0;
+        for (const match of allMatches) {
             // Add plain text before this match
             if (match.start > currentIndex) {
                 const plainText = text.slice(currentIndex, match.start);
