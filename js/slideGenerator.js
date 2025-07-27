@@ -522,12 +522,19 @@ export class SlideGenerator {
      * Draw background image
      */
     drawBackgroundImage(ctx, settings) {
+        if (!settings.bgImage || !settings.bgImage.complete) {
+            console.log('Background image not available or not loaded');
+            return;
+        }
+        
         ctx.globalAlpha = settings.bgOpacity;
         const params = this.imageHandler.getBgImageDrawParams(
             settings.bgImage, 
             CONFIG.SLIDE_SIZE, 
             settings.bgImageMode
         );
+        
+        console.log('Drawing background image with params:', params);
         ctx.drawImage(
             settings.bgImage,
             params.sx, params.sy, params.sw, params.sh,
@@ -548,18 +555,35 @@ export class SlideGenerator {
             currentY = this.drawAuthorImage(ctx, settings.authImage, currentY);
         }
 
-        // Draw title
+        // Draw title - properly centered
         const titleParts = this.textProcessor.parseMarkdown(settings.titleText);
+        ctx.save();
         ctx.font = `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = settings.textColor;
 
-        this.textProcessor.drawRichText(
-            ctx, titleParts, CONFIG.SLIDE_SIZE / 2, currentY,
-            undefined, `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`,
-            settings.textColor, 'center'
-        );
+        // Calculate total width for proper centering
+        let totalTitleWidth = 0;
+        for (const part of titleParts) {
+            const font = part.formatting && part.formatting.bold ? 
+                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` : 
+                `${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`;
+            ctx.font = font;
+            totalTitleWidth += ctx.measureText(part.text).width;
+        }
+
+        // Draw title parts centered
+        let currentX = CONFIG.SLIDE_SIZE / 2 - totalTitleWidth / 2;
+        for (const part of titleParts) {
+            const font = part.formatting && part.formatting.bold ? 
+                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` : 
+                `${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`;
+            ctx.font = font;
+            ctx.fillText(part.text, currentX + ctx.measureText(part.text).width / 2, currentY);
+            currentX += ctx.measureText(part.text).width;
+        }
+        ctx.restore();
 
         // Draw separator line
         if (settings.subtitleText) {
@@ -572,14 +596,35 @@ export class SlideGenerator {
             ctx.stroke();
             ctx.globalAlpha = 1.0;
 
-            // Draw subtitle
+            // Draw subtitle - properly centered
             const subtitleParts = this.textProcessor.parseMarkdown(settings.subtitleText);
+            ctx.save();
             ctx.font = `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`;
-            this.textProcessor.drawRichText(
-                ctx, subtitleParts, CONFIG.SLIDE_SIZE / 2, currentY + 70,
-                undefined, `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`,
-                settings.textColor, 'center'
-            );
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = settings.textColor;
+
+            // Calculate total width for proper centering
+            let totalSubtitleWidth = 0;
+            for (const part of subtitleParts) {
+                const font = part.formatting && part.formatting.bold ? 
+                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` : 
+                    `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`;
+                ctx.font = font;
+                totalSubtitleWidth += ctx.measureText(part.text).width;
+            }
+
+            // Draw subtitle parts centered
+            let subtitleX = CONFIG.SLIDE_SIZE / 2 - totalSubtitleWidth / 2;
+            for (const part of subtitleParts) {
+                const font = part.formatting && part.formatting.bold ? 
+                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` : 
+                    `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`;
+                ctx.font = font;
+                ctx.fillText(part.text, subtitleX + ctx.measureText(part.text).width / 2, currentY + 70);
+                subtitleX += ctx.measureText(part.text).width;
+            }
+            ctx.restore();
         }
     }
 
