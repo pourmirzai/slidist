@@ -82,6 +82,9 @@ export class SlideGenerator {
 
         // Keyboard shortcuts
         this.setupKeyboardShortcuts();
+
+        // Live preview
+        this.setupLivePreview();
     }
 
     /**
@@ -488,7 +491,6 @@ export class SlideGenerator {
 
         // Set text properties
         ctx.fillStyle = settings.textColor;
-        ctx.direction = 'rtl';
 
         // Draw content based on slide type
         if (slideContent.type === 'title') {
@@ -562,6 +564,7 @@ export class SlideGenerator {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = settings.textColor;
+        ctx.direction = 'rtl';
 
         // Calculate total width for proper centering
         let totalTitleWidth = 0;
@@ -673,13 +676,24 @@ export class SlideGenerator {
         ctx.font = `${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
-        ctx.direction = 'rtl';
+
+        let currentColumn = 1;
+        let columnX = CONFIG.SLIDE_SIZE - settings.padding;
+        let columnWidth = CONFIG.SLIDE_SIZE - 2 * settings.padding;
 
         for (const item of slideContent) {
+            if (item.type === 'column-separator') {
+                currentColumn = 2;
+                columnX = CONFIG.SLIDE_SIZE / 2 - settings.padding / 2;
+                columnWidth = CONFIG.SLIDE_SIZE / 2 - settings.padding;
+                y = settings.padding;
+                continue;
+            }
+
             if (item.type === 'heading') {
                 const fontSize = settings.fontSize * (item.level === 1 ? 1.5 : item.level === 2 ? 1.3 : 1.2);
                 ctx.font = `bold ${fontSize}px ${CONFIG.FONT_FAMILY}`;
-                ctx.fillText(item.text, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(item.text, columnX, y, columnWidth);
                 y += fontSize * settings.lineHeightMultiplier;
                 ctx.font = `${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
             } else if (item.type === 'body' || item.type === 'list') {
@@ -687,15 +701,30 @@ export class SlideGenerator {
                 if (item.useBullet && item.isFirstLineOfPara) {
                     text = `${settings.bulletChar} ${text}`;
                 }
-                ctx.fillText(text, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(text, columnX, y, columnWidth);
                 y += settings.fontSize * settings.lineHeightMultiplier;
             } else if (item.type === 'quote') {
                 ctx.save();
                 ctx.fillStyle = COLOR_THEMES[this.currentTheme]?.accent || '#6c757d';
                 ctx.font = `italic ${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
-                ctx.fillText(`"${item.text}"`, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(`"${item.text}"`, columnX, y, columnWidth);
                 ctx.restore();
                 y += settings.fontSize * settings.lineHeightMultiplier;
+            } else if (item.type === 'code') {
+                ctx.save();
+                ctx.fillStyle = '#f0f0f0';
+                const codeLines = item.text.split('\n');
+                const codeBlockHeight = codeLines.length * settings.fontSize * 1.2 + 20;
+                ctx.fillRect(settings.padding, y, CONFIG.SLIDE_SIZE - 2 * settings.padding, codeBlockHeight);
+                ctx.fillStyle = '#333';
+                ctx.font = `${settings.fontSize * 0.9}px monospace`;
+                let codeY = y + 15;
+                for (const line of codeLines) {
+                    ctx.fillText(line, settings.padding + 15, codeY);
+                    codeY += settings.fontSize * 1.2;
+                }
+                ctx.restore();
+                y += codeBlockHeight + settings.fontSize * settings.lineHeightMultiplier;
             } else if (item.type === 'spacer') {
                 y += settings.fontSize * 0.5;
             }
@@ -818,6 +847,152 @@ export class SlideGenerator {
         }
         this.generatedSlides = [];
         showToast('پیش‌نمایش پاک شد', 'info');
+    }
+
+    /**
+     * Setup live preview functionality
+     */
+    setupLivePreview() {
+        const toggle = document.getElementById('livePreviewToggle');
+        const container = document.getElementById('livePreviewContainer');
+        const editor = document.getElementById('inputText');
+
+        if (!toggle || !container || !editor) return;
+
+        const togglePreview = () => {
+            container.style.display = toggle.checked ? 'flex' : 'none';
+            if (toggle.checked) {
+                this.updateLivePreview();
+            }
+        };
+
+        toggle.addEventListener('change', togglePreview);
+
+        editor.addEventListener('input', debounce(() => {
+            if (toggle.checked) {
+                this.updateLivePreview();
+            }
+        }, 500));
+
+        // Initial state
+        togglePreview();
+    }
+
+    /**
+     * Update live preview with the current slide
+     */
+    async updateLivePreview() {
+        const container = document.getElementById('livePreviewContainer');
+        if (!container) return;
+
+        const settings = this.getSettings();
+        const { text, titleText } = settings;
+
+        if (!text.trim() && !titleText) {
+            container.innerHTML = '<div class="placeholder"><p>برای شروع به نوشتن، پیش‌نمایش زنده در اینجا نمایش داده می‌شود</p></div>';
+            return;
+        }
+
+        container.innerHTML = '<div class="loading-spinner"></div>';
+
+        try {
+            const slides = this.textProcessor.parseAndStructureContent(settings);
+            let currentSlideContent;
+            let currentSlideIndex = 0;
+            let totalSlides = slides.length;
+
+            if (titleText) {
+                totalSlides++;
+                currentSlideIndex = 1;
+            }
+
+            const cursorPosition = document.getElementById('inputText').selectionStart;
+            const textUpToCursor = text.substring(0, cursorPosition);
+            const slideBreaks = (textUpToCursor.match(/###/g) || []).length;
+
+            currentSlideIndex += slideBreaks;
+
+            if (slideBreaks >= slides.length && slides.length > 0) {
+                 currentSlideContent = slides[slides.length-1];
+            } else {
+                 currentSlideContent = slides[slideBreaks];
+            }
+
+
+            if (titleText && slideBreaks === 0 && textUpToCursor.length <= (titleText.length + (settings.subtitleText || '').length)) {
+                 currentSlideContent = { type: 'title' };
+                 currentSlideIndex = 0;
+            }
+
+
+            if (!currentSlideContent) {
+                 if (titleText) {
+                    currentSlideContent = { type: 'title' };
+                 } else if (slides.length > 0) {
+                    currentSlideContent = slides[0];
+                 } else {
+                    container.innerHTML = '<div class="placeholder"><p>محتوایی برای نمایش وجود ندارد</p></div>';
+                    return;
+                 }
+            }
+
+
+            const dataURL = await this.createSlide(currentSlideContent, totalSlides, currentSlideIndex, settings);
+            container.innerHTML = `<img src="${dataURL}" alt="پیش‌نمایش زنده" />`;
+        } catch (error) {
+            console.error('Live preview failed:', error);
+            container.innerHTML = '<div class="placeholder"><p>خطا در ایجاد پیش‌نمایش</p></div>';
+        }
+    }
+
+    /**
+     * Download all slides as a single PDF
+     */
+    async downloadAllSlidesAsPDF() {
+        if (this.generatedSlides.length === 0) {
+            showToast('ابتدا یک پیش‌نمایش ایجاد کنید', 'warning');
+            return;
+        }
+
+        const settings = this.getSettings();
+        const button = document.querySelector('button[onclick="slideGenerator.downloadAllSlidesAsPDF()"]');
+        if (!button) return;
+
+        const originalText = button.innerHTML;
+        button.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: [CONFIG.SLIDE_SIZE, CONFIG.SLIDE_SIZE]
+            });
+
+            for (let i = 0; i < this.generatedSlides.length; i++) {
+                button.innerHTML = `در حال آماده‌سازی PDF... ${toPersianNum(i + 1)}/${toPersianNum(this.generatedSlides.length)}`;
+                const dataURL = await this.createSlide(
+                    this.generatedSlides[i],
+                    this.generatedSlides.length,
+                    i,
+                    settings
+                );
+
+                if (i > 0) {
+                    doc.addPage();
+                }
+                doc.addImage(dataURL, 'PNG', 0, 0, CONFIG.SLIDE_SIZE, CONFIG.SLIDE_SIZE);
+            }
+
+            doc.save('presentation.pdf');
+            showToast('PDF با موفقیت دانلود شد', 'success');
+        } catch (error) {
+            console.error('PDF download failed:', error);
+            showToast('خطا در دانلود PDF', 'error');
+        } finally {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
     }
 
     /**

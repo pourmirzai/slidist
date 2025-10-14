@@ -12,6 +12,8 @@
     <!-- External Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Fonts -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
@@ -189,29 +191,47 @@
         </details>
 
         <!-- Main Content Input -->
-        <div style="margin: 20px 0;">
-            <label for="inputText" style="display: block; margin-bottom: 10px; font-weight: bold;">محتوای اسلایدها:</label>
-            <textarea 
-                id="inputText" 
-                placeholder="متن خود را اینجا وارد کنید.&#x0a;## برای تیتر بزرگ&#x0a;### برای تیتر بزرگ در اسلاید جدید&#x0a;می‌توانید از ایموجی 😊 و Markdown **bold** یا *italic* استفاده کنید.&#x0a;&#x0a;> برای نقل قول از این علامت استفاده کنید&#x0a;&#x0a;- یا از خط تیره برای لیست&#x0a;- مورد دوم لیست"
-                rows="8"
-                aria-describedby="inputHelp"
-            ></textarea>
-            <small id="inputHelp">
-                <strong>راهنما:</strong> 
-                ### برای اسلاید جدید | 
-                ## برای تیتر بزرگ | 
-                **متن** برای بولد | 
-                *متن* برای ایتالیک | 
-                > برای نقل قول | 
-                - برای لیست
-            </small>
+        <div class="main-content-area">
+            <div class="editor-container">
+                <div class="editor-header">
+                    <label for="inputText" style="display: block; margin-bottom: 10px; font-weight: bold;">محتوای اسلایدها:</label>
+                    <div class="live-preview-toggle">
+                        <label for="livePreviewToggle">پیش‌نمایش زنده:</label>
+                        <input type="checkbox" id="livePreviewToggle" checked>
+                    </div>
+                </div>
+                <textarea
+                    id="inputText"
+                    placeholder="متن خود را اینجا وارد کنید.&#x0a;## برای تیتر بزرگ&#x0a;### برای تیتر بزرگ در اسلاید جدید&#x0a;می‌توانید از ایموجی 😊 و Markdown **bold** یا *italic* استفاده کنید.&#x0a;&#x0a;> برای نقل قول از این علامت استفاده کنید&#x0a;&#x0a;- یا از خط تیره برای لیست&#x0a;- مورد دوم لیست"
+                    rows="12"
+                    aria-describedby="inputHelp"
+                ></textarea>
+                <small id="inputHelp">
+                    <strong>راهنما:</strong>
+                    ### برای اسلاید جدید |
+                    ## برای تیتر بزرگ |
+                    **متن** برای بولد |
+                    *متن* برای ایتالیک |
+                    > برای نقل قول |
+                    - برای لیست |
+                    --- برای دو ستونه |
+                    ``` برای کد
+                </small>
+            </div>
+            <div id="livePreviewContainer" class="live-preview-container">
+                <div class="placeholder">
+                    <p>پیش‌نمایش زنده در اینجا نمایش داده می‌شود</p>
+                </div>
+            </div>
         </div>
 
         <!-- Action Buttons -->
         <div style="text-align: center; margin: 30px 0;">
             <button onclick="slideGenerator.previewSlides()" class="btn-primary" style="margin-left: 10px;">
                 🎯 ایجاد پیش‌نمایش
+            </button>
+            <button onclick="slideGenerator.downloadAllSlidesAsPDF()" class="btn-success" style="margin-left: 10px;">
+                📄 دانلود PDF
             </button>
             <button onclick="slideGenerator.clearPreview()" class="btn-secondary">
                 🗑️ پاک کردن پیش‌نمایش

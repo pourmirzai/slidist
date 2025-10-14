@@ -198,6 +198,23 @@ export class TextProcessor {
                     type: 'quote',
                     text: trimmedLine.substring(2)
                 });
+            } else if (trimmedLine.startsWith('---')) {
+                // Two-column layout
+                allLines.push({ type: 'column-separator' });
+            } else if (trimmedLine.startsWith('```')) {
+                // Code block
+                let codeBlock = '';
+                let i = rawLines.indexOf(line) + 1;
+                while (i < rawLines.length && !rawLines[i].trim().startsWith('```')) {
+                    codeBlock += rawLines[i] + '\n';
+                    i++;
+                }
+                allLines.push({
+                    type: 'code',
+                    text: codeBlock.trim()
+                });
+                // Skip the lines that are part of the code block
+                rawLines.splice(rawLines.indexOf(line), i - rawLines.indexOf(line));
             } else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
                 // List item
                 const listText = trimmedLine.substring(2);
