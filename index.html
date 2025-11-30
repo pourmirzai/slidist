@@ -25,191 +25,43 @@
             <p>ایجاد اسلایدهای زیبا و حرفه‌ای با چند کلیک ساده</p>
         </header>
 
-        <!-- Title Slide Settings -->
-        <details open>
-            <summary>۱. تنظیمات اسلاید عنوان</summary>
-            <div class="details-content controls">
-                <div class="control-item full-width">
-                    <label for="titleText">عنوان اصلی:</label>
-                    <input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..." autocomplete="off">
-                </div>
-
-                <div class="control-item full-width">
-                    <label for="subtitleText">زیرنویس (اختیاری):</label>
-                    <input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..." autocomplete="off">
-                </div>
-
-                <div class="control-item">
-                    <label for="authorImageFile">عکس نویسنده (اختیاری):</label>
-                    <input type="file" id="authorImageFile" accept="image/*" aria-describedby="authorImageHelp">
-                    <div id="authorDropZone" class="drop-zone">
-                        یا تصویر را اینجا بکشید و رها کنید
-                    </div>
-                    <small id="authorImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="bgImageFile">تصویر پس‌زمینه:</label>
-                    <input type="file" id="bgImageFile" accept="image/*" aria-describedby="bgImageHelp">
-                    <div id="bgDropZone" class="drop-zone">
-                        یا تصویر را اینجا بکشید و رها کنید
-                    </div>
-                    <small id="bgImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label>
-                    <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"
-                        aria-describedby="opacityHelp">
-                    <small id="opacityHelp">تنظیم شفافیت تصویر پس‌زمینه</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
-                    <select id="bgImageMode" aria-describedby="bgModeHelp">
-                        <option value="cover-center">وسط وسط (Cover)</option>
-                        <option value="cover-top">وسط بالا (Cover)</option>
-                        <option value="cover-bottom">وسط پایین (Cover)</option>
-                        <option value="contain">تمام تصویر (Contain)</option>
-                        <option value="stretch">کشیده (Stretch)</option>
-                    </select>
-                    <small id="bgModeHelp">نحوه نمایش تصویر پس‌زمینه</small>
-                </div>
+        <!-- Tab Navigation -->
+        <div class="tabs-container">
+            <div class="tabs-nav" role="tablist">
+                <button class="tab-button active" data-tab="content" role="tab" aria-selected="true">
+                    <span class="tab-icon">📝</span>
+                    <span>محتوا</span>
+                </button>
+                <button class="tab-button" data-tab="design" role="tab" aria-selected="false">
+                    <span class="tab-icon">🎨</span>
+                    <span>طراحی</span>
+                </button>
+                <button class="tab-button" data-tab="title" role="tab" aria-selected="false">
+                    <span class="tab-icon">🏷️</span>
+                    <span>اسلاید عنوان</span>
+                </button>
+                <button class="tab-button" data-tab="advanced" role="tab" aria-selected="false">
+                    <span class="tab-icon">⚙️</span>
+                    <span>پیشرفته</span>
+                </button>
+                <button class="tab-button" data-tab="help" role="tab" aria-selected="false">
+                    <span class="tab-icon">❓</span>
+                    <span>راهنما</span>
+                </button>
             </div>
-        </details>
 
-        <!-- General Settings -->
-        <details open>
-            <summary>۲. تنظیمات کلی و استایل</summary>
-            <div class="details-content controls">
-                <div class="control-item full-width">
-                    <label>فرمت اسلاید:</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="slideFormat" value="post" checked>
-                            <span>پست اینستاگرام (۱:۱)</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="slideFormat" value="story">
-                            <span>استوری اینستاگرام (۹:۱۶)</span>
-                        </label>
+            <!-- Tab 1: Content -->
+            <div class="tab-content active" id="content-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">✍️</span>
+                        محتوای اسلایدها
                     </div>
-                </div>
-
-                <div class="control-item">
-                    <label for="fontSize">اندازه فونت متن:</label>
-                    <input type="number" id="fontSize" value="30" min="12" max="72" aria-describedby="fontSizeHelp">
-                    <small id="fontSizeHelp">اندازه فونت بر حسب پیکسل</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="lineHeight">فاصله خطوط:</label>
-                    <input type="number" id="lineHeight" value="2" step="0.1" min="1" max="3"
-                        aria-describedby="lineHeightHelp">
-                    <small id="lineHeightHelp">ضریب فاصله بین خطوط</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="padding">حاشیه داخلی:</label>
-                    <input type="number" id="padding" value="90" min="20" max="200" aria-describedby="paddingHelp">
-                    <small id="paddingHelp">فاصله محتوا از لبه‌های اسلاید</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="footerText">متن فوتر (اختیاری):</label>
-                    <input type="text" id="footerText" placeholder="مثلا: @YourPage" autocomplete="off">
-                </div>
-
-                <div class="control-item full-width">
-                    <label>تم رنگی:</label>
-                    <div id="themeSelector" role="radiogroup" aria-label="انتخاب تم رنگی"></div>
-                </div>
-
-                <div id="customColorControls" class="full-width controls" style="display: none;">
-                    <div class="control-item">
-                        <label for="bgColor1">رنگ پس‌زمینه ۱:</label>
-                        <input type="color" id="bgColor1" value="#f5f5f5">
+                    <div class="section-description">
+                        متن خود را وارد کنید و از Markdown برای قالب‌بندی استفاده کنید
                     </div>
-                    <div class="control-item">
-                        <label for="bgColor2">رنگ پس‌زمینه ۲:</label>
-                        <input type="color" id="bgColor2" value="#e0e0e0">
-                    </div>
-                    <div class="control-item">
-                        <label for="textColor">رنگ متن:</label>
-                        <input type="color" id="textColor" value="#212121">
-                    </div>
-                </div>
-            </div>
-        </details>
 
-        <!-- Content Settings -->
-        <details>
-            <summary>۳. تنظیمات محتوا و بولت‌ها</summary>
-            <div class="details-content controls">
-                <div class="control-item checkbox-control">
-                    <input type="checkbox" id="useBullets" checked aria-describedby="bulletsHelp">
-                    <label for="useBullets">استفاده از بولت</label>
-                    <small id="bulletsHelp">نمایش نقطه یا نماد در ابتدای هر خط</small>
-                </div>
-
-                <div class="control-item">
-                    <label for="bulletSelect">انتخاب نوع بولت:</label>
-                    <select id="bulletSelect">
-                        <option value="✅">✅ تیک سبز</option>
-                        <option value="🔹">🔹 لوزی آبی</option>
-                        <option value="⚫️">⚫️ دایره سیاه</option>
-                        <option value="➡️">➡️ فلش</option>
-                        <option value="🔸">🔸 لوزی نارنجی</option>
-                        <option value="📌">📌 پین</option>
-                        <option value="⭐">⭐ ستاره</option>
-                        <option value="custom">سفارشی...</option>
-                    </select>
-                    <input type="text" id="customBulletInput" placeholder="بولت سفارشی"
-                        style="display: none; margin-top: 8px;">
-                </div>
-            </div>
-        </details>
-
-        <!-- Advanced Settings -->
-        <details>
-            <summary>۴. تنظیمات پیشرفته</summary>
-            <div class="details-content controls">
-                <div class="control-item">
-                    <label>آمار محتوا:</label>
-                    <div id="contentStats"
-                        style="background: var(--bg-light); padding: 10px; border-radius: var(--border-radius); font-size: 14px;">
-                        <div>تعداد کلمات: <span id="wordCount">0</span></div>
-                        <div>زمان تقریبی مطالعه: <span id="readingTime">0</span> دقیقه</div>
-                        <div>تعداد اسلایدهای تولیدی: <span id="slideCount">0</span></div>
-                    </div>
-                </div>
-
-                <div class="control-item">
-                    <label>مدیریت تنظیمات:</label>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" onclick="slideGenerator.exportSettings()" class="btn-secondary"
-                            style="padding: 8px 16px; font-size: 14px;">
-                            📤 صادر کردن تنظیمات
-                        </button>
-                        <input type="file" id="importSettings" accept=".json" style="display: none;">
-                        <button type="button" onclick="document.getElementById('importSettings').click()"
-                            class="btn-secondary" style="padding: 8px 16px; font-size: 14px;">
-                            📥 وارد کردن تنظیمات
-                        </button>
-                        <button type="button" onclick="slideGenerator.storageManager.clearSettings()" class="btn-danger"
-                            style="padding: 8px 16px; font-size: 14px;">
-                            🗑️ پاک کردن تنظیمات
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </details>
-
-        <!-- Main Content Input -->
-        <div style="margin: 20px 0;">
-            <label for="inputText" style="display: block; margin-bottom: 10px; font-weight: bold;">محتوای
-                اسلایدها:</label>
-            <textarea id="inputText" placeholder="متن خود را اینجا وارد کنید.
+                    <textarea id="inputText" placeholder="متن خود را اینجا وارد کنید.
 ## برای تیتر بزرگ
 ### برای تیتر بزرگ در اسلاید جدید
 می‌توانید از ایموجی 😊 و Markdown **bold** یا *italic* استفاده کنید.
@@ -217,59 +69,310 @@
 > برای نقل قول از این علامت استفاده کنید
 
 - یا از خط تیره برای لیست
-- مورد دوم لیست" rows="8" aria-describedby="inputHelp"></textarea>
-            <small id="inputHelp">
-                <strong>راهنما:</strong>
-                ### برای اسلاید جدید |
-                ## برای تیتر بزرگ |
-                **متن** برای بولد |
-                *متن* برای ایتالیک |
-                > برای نقل قول |
-                - برای لیست
-            </small>
+- مورد دوم لیست" rows="10" aria-describedby="inputHelp"></textarea>
+
+                    <small id="inputHelp" style="display: block; margin-top: 10px; color: var(--text-muted);">
+                        <strong>راهنما:</strong>
+                        ### برای اسلاید جدید |
+                        ## برای تیتر بزرگ |
+                        **متن** برای بولد |
+                        *متن* برای ایتالیک |
+                        > برای نقل قول |
+                        - برای لیست
+                    </small>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🔹</span>
+                        تنظیمات بولت
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item checkbox-control">
+                            <input type="checkbox" id="useBullets" checked aria-describedby="bulletsHelp">
+                            <label for="useBullets">استفاده از بولت</label>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bulletSelect">انتخاب نوع بولت:</label>
+                            <select id="bulletSelect">
+                                <option value="✅">✅ تیک سبز</option>
+                                <option value="🔹">🔹 لوزی آبی</option>
+                                <option value="⚫️">⚫️ دایره سیاه</option>
+                                <option value="➡️">➡️ فلش</option>
+                                <option value="🔸">🔸 لوزی نارنجی</option>
+                                <option value="📌">📌 پین</option>
+                                <option value="⭐">⭐ ستاره</option>
+                                <option value="custom">سفارشی...</option>
+                            </select>
+                            <input type="text" id="customBulletInput" placeholder="بولت سفارشی"
+                                style="display: none; margin-top: 8px;">
+                        </div>
+                    </div>
+                    <small id="bulletsHelp" style="display: block; margin-top: 10px; color: var(--text-muted);">
+                        نمایش نقطه یا نماد در ابتدای هر خط
+                    </small>
+                </div>
+            </div>
+
+            <!-- Tab 2: Design -->
+            <div class="tab-content" id="design-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">📐</span>
+                        فرمت و اندازه
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item full-width">
+                            <label>فرمت اسلاید:</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="slideFormat" value="post" checked>
+                                    <span>پست اینستاگرام (۱:۱)</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="slideFormat" value="story">
+                                    <span>استوری اینستاگرام (۹:۱۶)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="fontSize">اندازه فونت متن:</label>
+                            <input type="number" id="fontSize" value="30" min="12" max="72"
+                                aria-describedby="fontSizeHelp">
+                            <small id="fontSizeHelp">اندازه فونت بر حسب پیکسل</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="lineHeight">فاصله خطوط:</label>
+                            <input type="number" id="lineHeight" value="2" step="0.1" min="1" max="3"
+                                aria-describedby="lineHeightHelp">
+                            <small id="lineHeightHelp">ضریب فاصله بین خطوط</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="padding">حاشیه داخلی:</label>
+                            <input type="number" id="padding" value="90" min="20" max="200"
+                                aria-describedby="paddingHelp">
+                            <small id="paddingHelp">فاصله محتوا از لبه‌های اسلاید</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="footerText">متن فوتر (اختیاری):</label>
+                            <input type="text" id="footerText" placeholder="مثلا: @YourPage" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🎨</span>
+                        تم رنگی
+                    </div>
+
+                    <div id="themeSelector" role="radiogroup" aria-label="انتخاب تم رنگی"></div>
+
+                    <div id="customColorControls" class="controls" style="display: none; margin-top: 20px;">
+                        <div class="control-item">
+                            <label for="bgColor1">رنگ پس‌زمینه ۱:</label>
+                            <input type="color" id="bgColor1" value="#f5f5f5">
+                        </div>
+                        <div class="control-item">
+                            <label for="bgColor2">رنگ پس‌زمینه ۲:</label>
+                            <input type="color" id="bgColor2" value="#e0e0e0">
+                        </div>
+                        <div class="control-item">
+                            <label for="textColor">رنگ متن:</label>
+                            <input type="color" id="textColor" value="#212121">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Title Slide -->
+            <div class="tab-content" id="title-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🏷️</span>
+                        عنوان و زیرنویس
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item full-width">
+                            <label for="titleText">عنوان اصلی:</label>
+                            <input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..."
+                                autocomplete="off">
+                        </div>
+
+                        <div class="control-item full-width">
+                            <label for="subtitleText">زیرنویس (اختیاری):</label>
+                            <input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..."
+                                autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🖼️</span>
+                        تصاویر
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item">
+                            <label for="authorImageFile">عکس نویسنده (اختیاری):</label>
+                            <input type="file" id="authorImageFile" accept="image/*" aria-describedby="authorImageHelp">
+                            <div id="authorDropZone" class="drop-zone">
+                                یا تصویر را اینجا بکشید و رها کنید
+                            </div>
+                            <small id="authorImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageFile">تصویر پس‌زمینه:</label>
+                            <input type="file" id="bgImageFile" accept="image/*" aria-describedby="bgImageHelp">
+                            <div id="bgDropZone" class="drop-zone">
+                                یا تصویر را اینجا بکشید و رها کنید
+                            </div>
+                            <small id="bgImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label>
+                            <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"
+                                aria-describedby="opacityHelp">
+                            <small id="opacityHelp">تنظیم شفافیت تصویر پس‌زمینه</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
+                            <select id="bgImageMode" aria-describedby="bgModeHelp">
+                                <option value="cover-center">وسط وسط (Cover)</option>
+                                <option value="cover-top">وسط بالا (Cover)</option>
+                                <option value="cover-bottom">وسط پایین (Cover)</option>
+                                <option value="contain">تمام تصویر (Contain)</option>
+                                <option value="stretch">کشیده (Stretch)</option>
+                            </select>
+                            <small id="bgModeHelp">نحوه نمایش تصویر پس‌زمینه</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Advanced -->
+            <div class="tab-content" id="advanced-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">📊</span>
+                        آمار محتوا
+                    </div>
+
+                    <div id="contentStats"
+                        style="background: var(--bg-light); padding: 15px; border-radius: var(--border-radius); font-size: 14px;">
+                        <div style="margin-bottom: 8px;">تعداد کلمات: <strong><span id="wordCount">0</span></strong>
+                        </div>
+                        <div style="margin-bottom: 8px;">زمان تقریبی مطالعه: <strong><span
+                                    id="readingTime">0</span></strong> دقیقه</div>
+                        <div>تعداد اسلایدهای تولیدی: <strong><span id="slideCount">0</span></strong></div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">💾</span>
+                        مدیریت تنظیمات
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" onclick="slideGenerator.exportSettings()" class="btn-secondary"
+                            style="padding: 10px 20px; font-size: 14px;">
+                            📤 صادر کردن تنظیمات
+                        </button>
+                        <input type="file" id="importSettings" accept=".json" style="display: none;">
+                        <button type="button" onclick="document.getElementById('importSettings').click()"
+                            class="btn-secondary" style="padding: 10px 20px; font-size: 14px;">
+                            📥 وارد کردن تنظیمات
+                        </button>
+                        <button type="button" onclick="slideGenerator.storageManager.clearSettings()" class="btn-danger"
+                            style="padding: 10px 20px; font-size: 14px;">
+                            🗑️ پاک کردن تنظیمات
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Help -->
+            <div class="tab-content" id="help-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">⌨️</span>
+                        کلیدهای میانبر
+                    </div>
+
+                    <ul style="text-align: right; list-style: none; padding: 0; line-height: 2;">
+                        <li>⌨️ <kbd>Ctrl + Enter</kbd>: ایجاد پیش‌نمایش</li>
+                        <li>⌨️ <kbd>Ctrl + S</kbd>: صادر کردن تنظیمات</li>
+                        <li>⌨️ <kbd>Esc</kbd>: بستن پنجره بزرگنمایی</li>
+                    </ul>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">📝</span>
+                        فرمت‌های پشتیبانی شده
+                    </div>
+
+                    <ul style="text-align: right; list-style: none; padding: 0; line-height: 2;">
+                        <li>📝 <code>**متن بولد**</code> - برای متن پررنگ</li>
+                        <li>📝 <code>*متن ایتالیک*</code> - برای متن کج</li>
+                        <li>📝 <code>### اسلاید جدید</code> - برای شروع اسلاید جدید</li>
+                        <li>📝 <code>## تیتر بزرگ</code> - برای تیتر بزرگ</li>
+                        <li>📝 <code>> نقل قول</code> - برای نقل قول</li>
+                        <li>📝 <code>- آیتم لیست</code> - برای لیست</li>
+                    </ul>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">💡</span>
+                        نکات مفید
+                    </div>
+
+                    <ul style="text-align: right; padding-right: 20px; line-height: 2;">
+                        <li>از ایموجی برای جذاب‌تر کردن اسلایدها استفاده کنید</li>
+                        <li>تنظیمات خود را ذخیره کنید تا دفعه بعد از آن استفاده کنید</li>
+                        <li>برای بهترین نتیجه، متن‌های کوتاه و مختصر بنویسید</li>
+                        <li>تم رنگی را متناسب با موضوع خود انتخاب کنید</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <!-- Action Buttons -->
-        <div style="text-align: center; margin: 30px 0;">
-            <button onclick="slideGenerator.previewSlides()" class="btn-primary" style="margin-left: 10px;">
+        <div
+            style="text-align: center; margin: 30px 0; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="slideGenerator.previewSlides()" class="btn-primary"
+                style="flex: 1; min-width: 200px; max-width: 300px;">
                 🎯 ایجاد پیش‌نمایش
             </button>
-            <button onclick="slideGenerator.clearPreview()" class="btn-secondary">
+            <button onclick="slideGenerator.clearPreview()" class="btn-secondary"
+                style="flex: 1; min-width: 200px; max-width: 300px;">
                 🗑️ پاک کردن پیش‌نمایش
             </button>
         </div>
 
         <!-- Preview Section -->
         <div id="preview" role="region" aria-label="پیش‌نمایش اسلایدها"></div>
-
-        <!-- Help Section -->
-        <details style="margin-top: 30px;">
-            <summary>❓ راهنما و کلیدهای میانبر</summary>
-            <div class="details-content">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <div>
-                        <h4>کلیدهای میانبر:</h4>
-                        <ul style="text-align: right; list-style: none; padding: 0;">
-                            <li>⌨️ <kbd>Ctrl + Enter</kbd>: ایجاد پیش‌نمایش</li>
-                            <li>⌨️ <kbd>Ctrl + S</kbd>: صادر کردن تنظیمات</li>
-                            <li>⌨️ <kbd>Esc</kbd>: بستن پنجره بزرگنمایی</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4>فرمت‌های پشتیبانی شده:</h4>
-                        <ul style="text-align: right; list-style: none; padding: 0;">
-                            <li>📝 **متن بولد**</li>
-                            <li>📝 *متن ایتالیک*</li>
-                            <li>📝 ### اسلاید جدید</li>
-                            <li>📝 ## تیتر بزرگ</li>
-                            <li>📝 > نقل قول</li>
-                            <li>📝 - آیتم لیست</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </details>
     </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="slideGenerator.previewSlides()" title="ایجاد سریع پیش‌نمایش"
+        aria-label="ایجاد پیش‌نمایش">
+        🎯
+    </button>
 
     <!-- Lightbox -->
     <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="بزرگنمایی اسلاید">
@@ -279,6 +382,33 @@
 
     <!-- Scripts -->
     <script type="module" src="js/slideGenerator.js"></script>
+
+    <!-- Tab Navigation Script -->
+    <script>
+        // Tab navigation functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    button.setAttribute('aria-selected', 'true');
+                    document.getElementById(targetTab + '-tab').classList.add('active');
+                });
+            });
+        });
+    </script>
 
     <!-- Import settings handler -->
     <script>
