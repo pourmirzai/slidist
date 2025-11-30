@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/pourmirzai/slidist?style=social)](https://github.com/pourmirzai/slidist/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/pourmirzai/slidist?style=social)](https://github.com/pourmirzai/slidist/network/members)
-[![License](https://img.shields.io/github/license/pourmirzai/slidist)](LICENSE)
+[![License](https://img.shields.io/github/license/pourmirzai/slidist)](MIT)
 [![Demo](https://img.shields.io/badge/Demo-Live%20App-brightgreen)](https://pourmirzai.github.io/slidist/)
 [![PWA](https://img.shields.io/badge/PWA-Installable-blue)](https://pourmirzai.github.io/slidist/)
 [![RTL Support](https://img.shields.io/badge/RTL-Supported-lightgrey)](https://pourmirzai.github.io/slidist/)
