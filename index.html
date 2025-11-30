@@ -1,31 +1,27 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="مولد اسلاید هوشمند فارسی - ایجاد اسلایدهای زیبا و حرفه‌ای">
     <meta name="keywords" content="اسلاید, پرزنتیشن, فارسی, مولد اسلاید">
     <meta name="author" content="Slidist">
-    
+
     <title>اسلایدساز هوشمند - Slidist</title>
-    
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
     <!-- External Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    
-    <!-- Fonts -->
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>🎯 مولد اسلاید هوشمند</h1>
+            <h1>🎨 اسلایدساز هوشمند</h1>
             <p>ایجاد اسلایدهای زیبا و حرفه‌ای با چند کلیک ساده</p>
         </header>
 
@@ -37,12 +33,12 @@
                     <label for="titleText">عنوان اصلی:</label>
                     <input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..." autocomplete="off">
                 </div>
-                
+
                 <div class="control-item full-width">
                     <label for="subtitleText">زیرنویس (اختیاری):</label>
                     <input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..." autocomplete="off">
                 </div>
-                
+
                 <div class="control-item">
                     <label for="authorImageFile">عکس نویسنده (اختیاری):</label>
                     <input type="file" id="authorImageFile" accept="image/*" aria-describedby="authorImageHelp">
@@ -51,7 +47,7 @@
                     </div>
                     <small id="authorImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="bgImageFile">تصویر پس‌زمینه:</label>
                     <input type="file" id="bgImageFile" accept="image/*" aria-describedby="bgImageHelp">
@@ -60,13 +56,14 @@
                     </div>
                     <small id="bgImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label>
-                    <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3" aria-describedby="opacityHelp">
+                    <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"
+                        aria-describedby="opacityHelp">
                     <small id="opacityHelp">تنظیم شفافیت تصویر پس‌زمینه</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
                     <select id="bgImageMode" aria-describedby="bgModeHelp">
@@ -85,32 +82,47 @@
         <details open>
             <summary>۲. تنظیمات کلی و استایل</summary>
             <div class="details-content controls">
+                <div class="control-item full-width">
+                    <label>فرمت اسلاید:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="slideFormat" value="post" checked>
+                            <span>پست اینستاگرام (۱:۱)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="slideFormat" value="story">
+                            <span>استوری اینستاگرام (۹:۱۶)</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="control-item">
                     <label for="fontSize">اندازه فونت متن:</label>
                     <input type="number" id="fontSize" value="30" min="12" max="72" aria-describedby="fontSizeHelp">
                     <small id="fontSizeHelp">اندازه فونت بر حسب پیکسل</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="lineHeight">فاصله خطوط:</label>
-                    <input type="number" id="lineHeight" value="2" step="0.1" min="1" max="3" aria-describedby="lineHeightHelp">
+                    <input type="number" id="lineHeight" value="2" step="0.1" min="1" max="3"
+                        aria-describedby="lineHeightHelp">
                     <small id="lineHeightHelp">ضریب فاصله بین خطوط</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="padding">حاشیه داخلی:</label>
                     <input type="number" id="padding" value="90" min="20" max="200" aria-describedby="paddingHelp">
                     <small id="paddingHelp">فاصله محتوا از لبه‌های اسلاید</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="footerText">متن فوتر (اختیاری):</label>
                     <input type="text" id="footerText" placeholder="مثلا: @YourPage" autocomplete="off">
                 </div>
-                
+
                 <div class="control-item full-width">
                     <label>تم رنگی:</label>
-                    <div id="theme-selector" role="radiogroup" aria-label="انتخاب تم رنگی"></div>
+                    <div id="themeSelector" role="radiogroup" aria-label="انتخاب تم رنگی"></div>
                 </div>
 
                 <div id="customColorControls" class="full-width controls" style="display: none;">
@@ -139,7 +151,7 @@
                     <label for="useBullets">استفاده از بولت</label>
                     <small id="bulletsHelp">نمایش نقطه یا نماد در ابتدای هر خط</small>
                 </div>
-                
+
                 <div class="control-item">
                     <label for="bulletSelect">انتخاب نوع بولت:</label>
                     <select id="bulletSelect">
@@ -152,7 +164,8 @@
                         <option value="⭐">⭐ ستاره</option>
                         <option value="custom">سفارشی...</option>
                     </select>
-                    <input type="text" id="customBulletInput" placeholder="بولت سفارشی" style="display: none; margin-top: 8px;">
+                    <input type="text" id="customBulletInput" placeholder="بولت سفارشی"
+                        style="display: none; margin-top: 8px;">
                 </div>
             </div>
         </details>
@@ -163,24 +176,28 @@
             <div class="details-content controls">
                 <div class="control-item">
                     <label>آمار محتوا:</label>
-                    <div id="contentStats" style="background: var(--bg-light); padding: 10px; border-radius: var(--border-radius); font-size: 14px;">
+                    <div id="contentStats"
+                        style="background: var(--bg-light); padding: 10px; border-radius: var(--border-radius); font-size: 14px;">
                         <div>تعداد کلمات: <span id="wordCount">0</span></div>
                         <div>زمان تقریبی مطالعه: <span id="readingTime">0</span> دقیقه</div>
                         <div>تعداد اسلایدهای تولیدی: <span id="slideCount">0</span></div>
                     </div>
                 </div>
-                
+
                 <div class="control-item">
                     <label>مدیریت تنظیمات:</label>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" onclick="slideGenerator.exportSettings()" class="btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                        <button type="button" onclick="slideGenerator.exportSettings()" class="btn-secondary"
+                            style="padding: 8px 16px; font-size: 14px;">
                             📤 صادر کردن تنظیمات
                         </button>
                         <input type="file" id="importSettings" accept=".json" style="display: none;">
-                        <button type="button" onclick="document.getElementById('importSettings').click()" class="btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                        <button type="button" onclick="document.getElementById('importSettings').click()"
+                            class="btn-secondary" style="padding: 8px 16px; font-size: 14px;">
                             📥 وارد کردن تنظیمات
                         </button>
-                        <button type="button" onclick="slideGenerator.storageManager.clearSettings()" class="btn-danger" style="padding: 8px 16px; font-size: 14px;">
+                        <button type="button" onclick="slideGenerator.storageManager.clearSettings()" class="btn-danger"
+                            style="padding: 8px 16px; font-size: 14px;">
                             🗑️ پاک کردن تنظیمات
                         </button>
                     </div>
@@ -190,20 +207,24 @@
 
         <!-- Main Content Input -->
         <div style="margin: 20px 0;">
-            <label for="inputText" style="display: block; margin-bottom: 10px; font-weight: bold;">محتوای اسلایدها:</label>
-            <textarea 
-                id="inputText" 
-                placeholder="متن خود را اینجا وارد کنید.&#x0a;## برای تیتر بزرگ&#x0a;### برای تیتر بزرگ در اسلاید جدید&#x0a;می‌توانید از ایموجی 😊 و Markdown **bold** یا *italic* استفاده کنید.&#x0a;&#x0a;> برای نقل قول از این علامت استفاده کنید&#x0a;&#x0a;- یا از خط تیره برای لیست&#x0a;- مورد دوم لیست"
-                rows="8"
-                aria-describedby="inputHelp"
-            ></textarea>
+            <label for="inputText" style="display: block; margin-bottom: 10px; font-weight: bold;">محتوای
+                اسلایدها:</label>
+            <textarea id="inputText" placeholder="متن خود را اینجا وارد کنید.
+## برای تیتر بزرگ
+### برای تیتر بزرگ در اسلاید جدید
+می‌توانید از ایموجی 😊 و Markdown **bold** یا *italic* استفاده کنید.
+
+> برای نقل قول از این علامت استفاده کنید
+
+- یا از خط تیره برای لیست
+- مورد دوم لیست" rows="8" aria-describedby="inputHelp"></textarea>
             <small id="inputHelp">
-                <strong>راهنما:</strong> 
-                ### برای اسلاید جدید | 
-                ## برای تیتر بزرگ | 
-                **متن** برای بولد | 
-                *متن* برای ایتالیک | 
-                > برای نقل قول | 
+                <strong>راهنما:</strong>
+                ### برای اسلاید جدید |
+                ## برای تیتر بزرگ |
+                **متن** برای بولد |
+                *متن* برای ایتالیک |
+                > برای نقل قول |
                 - برای لیست
             </small>
         </div>
@@ -258,7 +279,7 @@
 
     <!-- Scripts -->
     <script type="module" src="js/slideGenerator.js"></script>
-    
+
     <!-- Import settings handler -->
     <script>
         document.getElementById('importSettings').addEventListener('change', async (e) => {
@@ -290,4 +311,5 @@
         }
     </script>
 </body>
+
 </html>

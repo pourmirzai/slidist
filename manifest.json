@@ -1,0 +1,17 @@
+{
+  "name": "Slidist - مولد اسلاید هوشمند",
+  "short_name": "Slidist",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "description": "ایجاد اسلایدهای زیبا و حرفه‌ای با چند کلیک ساده",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "orientation": "any"
+}

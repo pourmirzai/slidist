@@ -25,7 +25,7 @@ export class ImageHandler {
 
             // Process image
             const processedImage = await this.processImage(file);
-            
+
             // Store image
             if (imageType === 'background') {
                 this.backgroundImage = processedImage;
@@ -35,7 +35,7 @@ export class ImageHandler {
 
             this.showLoadingState(imageType, false);
             showToast(`تصویر ${imageType === 'background' ? 'پس‌زمینه' : 'نویسنده'} بارگذاری شد`, 'success');
-            
+
             return true;
         } catch (error) {
             console.error('Image upload failed:', error);
@@ -70,10 +70,10 @@ export class ImageHandler {
     async processImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            
+
             reader.onload = (e) => {
                 const img = new Image();
-                
+
                 img.onload = () => {
                     // Check dimensions
                     if (img.width > this.maxDimensions.width || img.height > this.maxDimensions.height) {
@@ -84,11 +84,11 @@ export class ImageHandler {
                         resolve(img);
                     }
                 };
-                
+
                 img.onerror = () => reject(new Error('Failed to load image'));
                 img.src = e.target.result;
             };
-            
+
             reader.onerror = () => reject(new Error('Failed to read file'));
             reader.readAsDataURL(file);
         });
@@ -100,23 +100,23 @@ export class ImageHandler {
     resizeImage(img) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
+
         // Calculate new dimensions
         const ratio = Math.min(
             this.maxDimensions.width / img.width,
             this.maxDimensions.height / img.height
         );
-        
+
         canvas.width = img.width * ratio;
         canvas.height = img.height * ratio;
-        
+
         // Draw resized image
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
+
         // Create new image from canvas
         const resizedImg = new Image();
         resizedImg.src = canvas.toDataURL('image/jpeg', 0.9);
-        
+
         return resizedImg;
     }
 
@@ -126,7 +126,7 @@ export class ImageHandler {
     showLoadingState(imageType, isLoading) {
         const dropZoneId = imageType === 'background' ? 'bgDropZone' : 'authorDropZone';
         const dropZone = document.getElementById(dropZoneId);
-        
+
         if (dropZone) {
             if (isLoading) {
                 dropZone.innerHTML = '<div class="loading-spinner"></div>در حال بارگذاری...';
@@ -152,7 +152,7 @@ export class ImageHandler {
     setupDropZone(zoneId, inputId, type) {
         const zone = document.getElementById(zoneId);
         const input = document.getElementById(inputId);
-        
+
         if (!zone || !input) return;
 
         // File input change handler
@@ -176,7 +176,7 @@ export class ImageHandler {
         zone.addEventListener('drop', async (e) => {
             e.preventDefault();
             zone.classList.remove('drag-over');
-            
+
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 await this.handleImageUpload(e.dataTransfer.files[0], type);
             }
@@ -191,43 +191,43 @@ export class ImageHandler {
     /**
      * Get background image draw parameters with enhanced modes
      */
-    getBgImageDrawParams(bgImage, slideSize, mode) {
+    getBgImageDrawParams(bgImage, width, height, mode) {
         let sx = 0, sy = 0, sw = bgImage.width, sh = bgImage.height;
-        let dx = 0, dy = 0, dw = slideSize, dh = slideSize;
+        let dx = 0, dy = 0, dw = width, dh = height;
 
         switch (mode) {
             case 'cover-top':
-                const scaleTop = Math.max(slideSize / bgImage.width, slideSize / bgImage.height);
-                sw = slideSize / scaleTop;
-                sh = slideSize / scaleTop;
+                const scaleTop = Math.max(width / bgImage.width, height / bgImage.height);
+                sw = width / scaleTop;
+                sh = height / scaleTop;
                 sx = (bgImage.width - sw) / 2;
                 sy = 0;
                 break;
-                
+
             case 'cover-center':
-                const scaleCenter = Math.max(slideSize / bgImage.width, slideSize / bgImage.height);
-                sw = slideSize / scaleCenter;
-                sh = slideSize / scaleCenter;
+                const scaleCenter = Math.max(width / bgImage.width, height / bgImage.height);
+                sw = width / scaleCenter;
+                sh = height / scaleCenter;
                 sx = (bgImage.width - sw) / 2;
                 sy = (bgImage.height - sh) / 2;
                 break;
-                
+
             case 'cover-bottom':
-                const scaleBottom = Math.max(slideSize / bgImage.width, slideSize / bgImage.height);
-                sw = slideSize / scaleBottom;
-                sh = slideSize / scaleBottom;
+                const scaleBottom = Math.max(width / bgImage.width, height / bgImage.height);
+                sw = width / scaleBottom;
+                sh = height / scaleBottom;
                 sx = (bgImage.width - sw) / 2;
                 sy = bgImage.height - sh;
                 break;
-                
+
             case 'contain':
-                const scaleContain = Math.min(slideSize / bgImage.width, slideSize / bgImage.height);
+                const scaleContain = Math.min(width / bgImage.width, height / bgImage.height);
                 dw = bgImage.width * scaleContain;
                 dh = bgImage.height * scaleContain;
-                dx = (slideSize - dw) / 2;
-                dy = (slideSize - dh) / 2;
+                dx = (width - dw) / 2;
+                dy = (height - dh) / 2;
                 break;
-                
+
             case 'stretch':
                 // Use default values (stretch to fill)
                 break;
@@ -247,7 +247,7 @@ export class ImageHandler {
             this.authorImage = null;
             document.getElementById('authorImageFile').value = '';
         }
-        
+
         showToast(`تصویر ${imageType === 'background' ? 'پس‌زمینه' : 'نویسنده'} حذف شد`, 'info');
     }
 
@@ -256,9 +256,9 @@ export class ImageHandler {
      */
     getImageInfo(imageType) {
         const image = imageType === 'background' ? this.backgroundImage : this.authorImage;
-        
+
         if (!image) return null;
-        
+
         return {
             width: image.width,
             height: image.height,

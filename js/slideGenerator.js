@@ -12,7 +12,7 @@ export class SlideGenerator {
         this.textProcessor = new TextProcessor();
         this.generatedSlides = [];
         this.currentTheme = 'minimal_clean';
-        
+
         this.init();
     }
 
@@ -24,8 +24,7 @@ export class SlideGenerator {
         this.setupThemeSelector();
         this.imageHandler.setupDragAndDrop();
         this.loadSettings();
-        this.setupAutoSave();
-        
+
         showToast('اسلایدساز آماده است', 'success');
     }
 
@@ -40,312 +39,134 @@ export class SlideGenerator {
             'subtitleText', 'footerText', 'bgImageOpacity'
         ];
 
+        const saveHandler = debounce(() => {
+            this.exportSettings();
+        }, 1000);
+
         inputs.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                element.addEventListener('input', debounce(() => {
-                    this.saveSettings();
-                }, 500));
+                element.addEventListener('input', saveHandler);
             }
         });
 
-        // Checkboxes and selects
-        const controls = ['useBullets', 'bulletSelect', 'bgImageMode'];
-        controls.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', () => {
-                    this.saveSettings();
-                    this.handleControlChange(id);
-                });
-            }
-        });
-
-        // Custom bullet input
-        const customBulletInput = document.getElementById('customBulletInput');
-        if (customBulletInput) {
-            customBulletInput.addEventListener('input', debounce(() => {
-                this.saveSettings();
-            }, 300));
-        }
-
-        // Opacity slider
-        const opacitySlider = document.getElementById('bgImageOpacity');
-        if (opacitySlider) {
-            opacitySlider.addEventListener('input', (e) => {
-                document.getElementById('opacityValue').textContent = e.target.value;
+        // Update opacity display
+        const opacityInput = document.getElementById('bgImageOpacity');
+        if (opacityInput) {
+            opacityInput.addEventListener('input', (e) => {
+                const val = document.getElementById('opacityValue');
+                if (val) val.textContent = e.target.value;
+                saveHandler();
             });
         }
 
-        // Lightbox
-        this.setupLightbox();
+        // Format selection
+        const formatInputs = document.querySelectorAll('input[name="slideFormat"]');
+        formatInputs.forEach(input => {
+            input.addEventListener('change', saveHandler);
+        });
 
-        // Keyboard shortcuts
-        this.setupKeyboardShortcuts();
-    }
-
-    /**
-     * Handle control changes
-     */
-    handleControlChange(controlId) {
-        switch (controlId) {
-            case 'bulletSelect':
-                const bulletSelect = document.getElementById('bulletSelect');
-                const customInput = document.getElementById('customBulletInput');
-                customInput.style.display = bulletSelect.value === 'custom' ? 'block' : 'none';
-                break;
+        // Background image mode
+        const bgMode = document.getElementById('bgImageMode');
+        if (bgMode) {
+            bgMode.addEventListener('change', saveHandler);
         }
     }
 
-    /**
-     * Setup theme selector with enhanced functionality
-     */
     setupThemeSelector() {
-        const selector = document.getElementById('theme-selector');
-        if (!selector) return;
+        const themeContainer = document.getElementById('themeSelector');
+        if (!themeContainer) return;
 
-        selector.innerHTML = '';
-
+        themeContainer.innerHTML = '';
         Object.entries(COLOR_THEMES).forEach(([key, theme]) => {
-            const div = document.createElement('div');
-            div.className = 'theme-preview';
-            div.dataset.themeKey = key;
-            div.tabIndex = 0; // Make focusable for accessibility
-            
-            div.innerHTML = `
-                <div class="colors" style="background: linear-gradient(45deg, ${theme.bg1}, ${theme.bg2});">
-                    <span class="text-sample" style="color: ${theme.text};">Aa</span>
-                </div>
-                <span class="theme-name">${theme.name}</span>
-            `;
-
-            // Click and keyboard event handlers
-            const applyTheme = () => this.applyColorTheme(key);
-            div.addEventListener('click', applyTheme);
-            div.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    applyTheme();
-                }
-            });
-
-            selector.appendChild(div);
+            const btn = document.createElement('div');
+            btn.className = `theme-option ${this.currentTheme === key ? 'active' : ''}`;
+            btn.style.background = `linear-gradient(135deg, ${theme.bg1}, ${theme.bg2})`;
+            btn.title = theme.name;
+            btn.onclick = () => this.applyTheme(key);
+            themeContainer.appendChild(btn);
         });
-
-        // Set default theme
-        this.applyColorTheme('minimal_clean');
     }
 
-    /**
-     * Apply color theme with enhanced functionality
-     */
-    applyColorTheme(key) {
-        // Update UI selection
-        document.querySelectorAll('.theme-preview').forEach(el => {
-            el.classList.remove('selected');
-        });
-        
-        const selectedTheme = document.querySelector(`.theme-preview[data-theme-key="${key}"]`);
-        if (selectedTheme) {
-            selectedTheme.classList.add('selected');
-        }
-
-        const theme = COLOR_THEMES[key];
+    applyTheme(themeName) {
+        this.currentTheme = themeName;
+        const theme = COLOR_THEMES[themeName];
         if (!theme) return;
 
-        this.currentTheme = key;
-        
-        // Show/hide custom color controls
-        const customControls = document.getElementById('customColorControls');
-        if (customControls) {
-            customControls.style.display = key === 'custom' ? 'grid' : 'none';
-        }
+        document.getElementById('bgColor1').value = theme.bg1;
+        document.getElementById('bgColor2').value = theme.bg2;
+        document.getElementById('textColor').value = theme.text;
 
-        // Update color inputs if not custom theme
-        if (key !== 'custom') {
-            const colorInputs = {
-                'bgColor1': theme.bg1,
-                'bgColor2': theme.bg2,
-                'textColor': theme.text
-            };
-
-            Object.entries(colorInputs).forEach(([id, value]) => {
-                const input = document.getElementById(id);
-                if (input) input.value = value;
-            });
-        }
-
-        this.saveSettings();
-        showToast(`تم "${theme.name}" اعمال شد`, 'info');
+        this.setupThemeSelector(); // Re-render to update active state
+        this.exportSettings();
     }
 
-    /**
-     * Setup lightbox functionality
-     */
-    setupLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        const closeLightbox = document.getElementById('closeLightbox');
-        const lightboxImg = document.getElementById('lightboxImg');
-
-        if (!lightbox || !closeLightbox || !lightboxImg) return;
-
-        // Close lightbox
-        const closeLightboxFn = () => lightbox.classList.remove('show');
-        
-        closeLightbox.addEventListener('click', closeLightboxFn);
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) closeLightboxFn();
-        });
-
-        // Keyboard support
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && lightbox.classList.contains('show')) {
-                closeLightboxFn();
-            }
-        });
-
-        // Preview click handler
-        const preview = document.getElementById('preview');
-        if (preview) {
-            preview.addEventListener('click', (e) => {
-                if (e.target.tagName === 'IMG') {
-                    lightboxImg.src = e.target.src;
-                    lightbox.classList.add('show');
-                }
-            });
-        }
-    }
-
-    /**
-     * Setup keyboard shortcuts
-     */
-    setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + Enter: Generate preview
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                this.previewSlides();
-            }
-            
-            // Ctrl/Cmd + S: Save settings
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                this.exportSettings();
-            }
-        });
-    }
-
-    /**
-     * Setup auto-save functionality
-     */
     setupAutoSave() {
-        // Auto-save every 30 seconds
-        setInterval(() => {
-            this.saveSettings();
-        }, 30000);
-
-        // Save before page unload
-        window.addEventListener('beforeunload', () => {
-            this.saveSettings();
-        });
+        // Already handled in event listeners
     }
 
     /**
-     * Get current settings
+     * Get current settings from UI
      */
     getSettings() {
-        const bulletSelect = document.getElementById('bulletSelect');
-        let bulletChar = bulletSelect?.value || '✅';
-        
-        if (bulletChar === 'custom') {
-            bulletChar = document.getElementById('customBulletInput')?.value || '•';
-        }
-
         return {
-            fontSize: parseInt(document.getElementById('fontSize')?.value || CONFIG.DEFAULT_FONT_SIZE),
-            padding: parseInt(document.getElementById('padding')?.value || CONFIG.DEFAULT_PADDING),
-            lineHeightMultiplier: parseFloat(document.getElementById('lineHeight')?.value || CONFIG.DEFAULT_LINE_HEIGHT),
-            bgColor1: document.getElementById('bgColor1')?.value || '#f5f5f5',
-            bgColor2: document.getElementById('bgColor2')?.value || '#e0e0e0',
-            textColor: document.getElementById('textColor')?.value || '#212121',
-            useBullets: document.getElementById('useBullets')?.checked || false,
-            bulletChar,
-            text: document.getElementById('inputText')?.value || '',
-            titleText: document.getElementById('titleText')?.value?.trim() || '',
-            subtitleText: document.getElementById('subtitleText')?.value?.trim() || '',
-            footerText: document.getElementById('footerText')?.value?.trim() || '',
-            bgImage: this.imageHandler.backgroundImage,
-            authImage: this.imageHandler.authorImage,
-            bgOpacity: parseFloat(document.getElementById('bgImageOpacity')?.value || 0.3),
+            text: document.getElementById('inputText').value,
+            fontSize: parseInt(document.getElementById('fontSize').value) || CONFIG.DEFAULT_FONT_SIZE,
+            padding: parseInt(document.getElementById('padding').value) || CONFIG.DEFAULT_PADDING,
+            lineHeight: parseFloat(document.getElementById('lineHeight').value) || CONFIG.DEFAULT_LINE_HEIGHT,
+            bgColor1: document.getElementById('bgColor1').value,
+            bgColor2: document.getElementById('bgColor2').value,
+            textColor: document.getElementById('textColor').value,
+            titleText: document.getElementById('titleText').value,
+            subtitleText: document.getElementById('subtitleText').value,
+            footerText: document.getElementById('footerText').value,
+            bgOpacity: parseFloat(document.getElementById('bgImageOpacity').value) || 0.3,
+            bgImage: this.imageHandler.bgImage,
+            authImage: this.imageHandler.authImage,
             bgImageMode: document.getElementById('bgImageMode')?.value || 'cover-center',
-            theme: this.currentTheme
+            theme: this.currentTheme,
+            format: document.querySelector('input[name="slideFormat"]:checked')?.value || 'post',
+            bulletChar: document.getElementById('bulletChar')?.value || '•',
+            lineHeightMultiplier: parseFloat(document.getElementById('lineHeight')?.value) || 1.6
         };
     }
 
     /**
-     * Save settings to localStorage
-     */
-    saveSettings() {
-        const settings = this.getSettings();
-        this.storageManager.saveSettings(settings);
-    }
-
-    /**
-     * Load settings from localStorage
+     * Load settings into UI
      */
     loadSettings() {
         const settings = this.storageManager.loadSettings();
         if (!settings) return;
 
         try {
-            // Apply loaded settings to form
-            const settingsMap = {
-                'fontSize': settings.fontSize,
-                'padding': settings.padding,
-                'lineHeight': settings.lineHeightMultiplier,
-                'bgColor1': settings.bgColor1,
-                'bgColor2': settings.bgColor2,
-                'textColor': settings.textColor,
-                'inputText': settings.text,
-                'titleText': settings.titleText,
-                'subtitleText': settings.subtitleText,
-                'footerText': settings.footerText,
-                'bgImageOpacity': settings.bgOpacity
-            };
-
-            Object.entries(settingsMap).forEach(([id, value]) => {
-                const element = document.getElementById(id);
-                if (element && value !== undefined) {
-                    element.value = value;
-                }
-            });
-
-            // Handle checkboxes and selects
-            const useBulletsEl = document.getElementById('useBullets');
-            if (useBulletsEl) useBulletsEl.checked = !!settings.useBullets;
-
-            const bulletSelectEl = document.getElementById('bulletSelect');
-            if (bulletSelectEl && settings.bulletChar) {
-                bulletSelectEl.value = settings.bulletChar;
-                this.handleControlChange('bulletSelect');
+            if (settings.text) document.getElementById('inputText').value = settings.text;
+            if (settings.fontSize) document.getElementById('fontSize').value = settings.fontSize;
+            if (settings.padding) document.getElementById('padding').value = settings.padding;
+            if (settings.lineHeight) document.getElementById('lineHeight').value = settings.lineHeight;
+            if (settings.bgColor1) document.getElementById('bgColor1').value = settings.bgColor1;
+            if (settings.bgColor2) document.getElementById('bgColor2').value = settings.bgColor2;
+            if (settings.textColor) document.getElementById('textColor').value = settings.textColor;
+            if (settings.titleText) document.getElementById('titleText').value = settings.titleText;
+            if (settings.subtitleText) document.getElementById('subtitleText').value = settings.subtitleText;
+            if (settings.footerText) document.getElementById('footerText').value = settings.footerText;
+            if (settings.bgOpacity) {
+                document.getElementById('bgImageOpacity').value = settings.bgOpacity;
+                const opVal = document.getElementById('opacityValue');
+                if (opVal) opVal.textContent = settings.bgOpacity;
             }
-
-            const customBulletEl = document.getElementById('customBulletInput');
-            if (customBulletEl) customBulletEl.value = settings.bulletChar || '';
+            if (settings.theme) {
+                this.currentTheme = settings.theme;
+                this.setupThemeSelector();
+            }
+            if (settings.format) {
+                const formatEl = document.querySelector(`input[name="slideFormat"][value="${settings.format}"]`);
+                if (formatEl) formatEl.checked = true;
+            }
 
             const bgModeEl = document.getElementById('bgImageMode');
             if (bgModeEl && settings.bgImageMode) {
                 bgModeEl.value = settings.bgImageMode;
             }
-
-            // Apply theme
-            if (settings.theme) {
-                this.applyColorTheme(settings.theme);
-            }
-
-            // Update opacity display
-            const opacityValue = document.getElementById('opacityValue');
-            if (opacityValue) opacityValue.textContent = settings.bgOpacity || 0.3;
 
             showToast('تنظیمات بارگیری شد', 'success');
         } catch (error) {
@@ -378,7 +199,7 @@ export class SlideGenerator {
     async previewSlides() {
         try {
             const settings = this.getSettings();
-            
+
             // Validation
             if (!settings.text.trim() && !settings.titleText) {
                 showToast('لطفاً عنوان یا متنی را وارد کنید', 'warning');
@@ -398,7 +219,7 @@ export class SlideGenerator {
 
             // Parse content
             this.generatedSlides = this.textProcessor.parseAndStructureContent(settings);
-            
+
             // Add title slide if needed
             if (settings.titleText) {
                 this.generatedSlides.unshift({ type: 'title' });
@@ -410,7 +231,7 @@ export class SlideGenerator {
             }
 
             await this.renderPreview(settings);
-            
+
         } catch (error) {
             console.error('Preview generation failed:', error);
             showToast('خطا در ایجاد پیش‌نمایش', 'error');
@@ -444,7 +265,7 @@ export class SlideGenerator {
             }
 
             const dataURL = await this.createSlide(this.generatedSlides[i], this.generatedSlides.length, i, settings);
-            slidePreviewsHTML += `<img src="${dataURL}" alt="پیش‌نمایش اسلاید ${i+1}" loading="lazy">`;
+            slidePreviewsHTML += `<img src="${dataURL}" alt="پیش‌نمایش اسلاید ${i + 1}" loading="lazy">`;
         }
 
         // Show final preview
@@ -469,9 +290,13 @@ export class SlideGenerator {
      * Create individual slide with enhanced rendering
      */
     async createSlide(slideContent, totalSlides, currentSlideIndex, settings) {
+        const formatConfig = CONFIG.SLIDE_FORMATS[settings.format] || CONFIG.SLIDE_FORMATS.post;
+        const width = formatConfig.width;
+        const height = formatConfig.height;
+
         const canvas = document.createElement('canvas');
-        canvas.width = CONFIG.SLIDE_SIZE;
-        canvas.height = CONFIG.SLIDE_SIZE;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
 
         // Enable high-quality rendering
@@ -479,11 +304,11 @@ export class SlideGenerator {
         ctx.imageSmoothingQuality = 'high';
 
         // Draw background
-        this.drawBackground(ctx, settings);
+        this.drawBackground(ctx, settings, width, height);
 
         // Draw background image for title slides
         if (slideContent.type === 'title' && settings.bgImage && settings.bgImage.complete) {
-            this.drawBackgroundImage(ctx, settings);
+            this.drawBackgroundImage(ctx, settings, width, height);
         }
 
         // Set text properties
@@ -492,13 +317,13 @@ export class SlideGenerator {
 
         // Draw content based on slide type
         if (slideContent.type === 'title') {
-            this.drawTitleSlide(ctx, settings);
+            this.drawTitleSlide(ctx, settings, width, height);
         } else {
-            this.drawContentSlide(ctx, slideContent, settings);
+            this.drawContentSlide(ctx, slideContent, settings, width, height);
         }
 
         // Draw footer
-        this.drawFooter(ctx, currentSlideIndex, totalSlides, settings);
+        this.drawFooter(ctx, currentSlideIndex, totalSlides, settings, width, height);
 
         return canvas.toDataURL('image/png', 0.95);
     }
@@ -506,34 +331,35 @@ export class SlideGenerator {
     /**
      * Draw background with gradient support
      */
-    drawBackground(ctx, settings) {
+    drawBackground(ctx, settings, width, height) {
         if (settings.bgColor1 !== settings.bgColor2) {
-            const gradient = ctx.createLinearGradient(0, 0, 0, CONFIG.SLIDE_SIZE);
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
             gradient.addColorStop(0, settings.bgColor1);
             gradient.addColorStop(1, settings.bgColor2);
             ctx.fillStyle = gradient;
         } else {
             ctx.fillStyle = settings.bgColor1;
         }
-        ctx.fillRect(0, 0, CONFIG.SLIDE_SIZE, CONFIG.SLIDE_SIZE);
+        ctx.fillRect(0, 0, width, height);
     }
 
     /**
      * Draw background image
      */
-    drawBackgroundImage(ctx, settings) {
+    drawBackgroundImage(ctx, settings, width, height) {
         if (!settings.bgImage || !settings.bgImage.complete) {
             console.log('Background image not available or not loaded');
             return;
         }
-        
+
         ctx.globalAlpha = settings.bgOpacity;
         const params = this.imageHandler.getBgImageDrawParams(
-            settings.bgImage, 
-            CONFIG.SLIDE_SIZE, 
+            settings.bgImage,
+            width,
+            height,
             settings.bgImageMode
         );
-        
+
         console.log('Drawing background image with params:', params);
         ctx.drawImage(
             settings.bgImage,
@@ -546,13 +372,23 @@ export class SlideGenerator {
     /**
      * Draw title slide with enhanced layout
      */
-    drawTitleSlide(ctx, settings) {
+    drawTitleSlide(ctx, settings, width, height) {
         const theme = COLOR_THEMES[this.currentTheme] || COLOR_THEMES['minimal_clean'];
-        let currentY = settings.subtitleText ? CONFIG.SLIDE_SIZE / 2 - 50 : CONFIG.SLIDE_SIZE / 2;
+        const safeZone = CONFIG.SAFE_ZONES[settings.format] || CONFIG.SAFE_ZONES.post;
+
+        let currentY = height / 2;
+        if (settings.format === 'story') {
+            const safeHeight = height - safeZone.top - safeZone.bottom;
+            currentY = safeZone.top + (safeHeight / 2);
+        }
+
+        if (settings.subtitleText) {
+            currentY -= 50;
+        }
 
         // Draw author image if available
         if (settings.authImage && settings.authImage.complete) {
-            currentY = this.drawAuthorImage(ctx, settings.authImage, currentY);
+            currentY = this.drawAuthorImage(ctx, settings.authImage, currentY, width);
         }
 
         // Draw title - properly centered
@@ -566,18 +402,18 @@ export class SlideGenerator {
         // Calculate total width for proper centering
         let totalTitleWidth = 0;
         for (const part of titleParts) {
-            const font = part.formatting && part.formatting.bold ? 
-                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` : 
+            const font = part.formatting && part.formatting.bold ?
+                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` :
                 `${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`;
             ctx.font = font;
             totalTitleWidth += ctx.measureText(part.text).width;
         }
 
         // Draw title parts centered
-        let currentX = CONFIG.SLIDE_SIZE / 2 - totalTitleWidth / 2;
+        let currentX = width / 2 - totalTitleWidth / 2;
         for (const part of titleParts) {
-            const font = part.formatting && part.formatting.bold ? 
-                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` : 
+            const font = part.formatting && part.formatting.bold ?
+                `bold ${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}` :
                 `${settings.fontSize * 1.5}px ${CONFIG.FONT_FAMILY}`;
             ctx.font = font;
             ctx.fillText(part.text, currentX + ctx.measureText(part.text).width / 2, currentY);
@@ -591,8 +427,8 @@ export class SlideGenerator {
             ctx.lineWidth = 2;
             ctx.globalAlpha = 0.5;
             ctx.beginPath();
-            ctx.moveTo(CONFIG.SLIDE_SIZE / 2 - 100, currentY + 35);
-            ctx.lineTo(CONFIG.SLIDE_SIZE / 2 + 100, currentY + 35);
+            ctx.moveTo(width / 2 - 100, currentY + 35);
+            ctx.lineTo(width / 2 + 100, currentY + 35);
             ctx.stroke();
             ctx.globalAlpha = 1.0;
 
@@ -607,18 +443,18 @@ export class SlideGenerator {
             // Calculate total width for proper centering
             let totalSubtitleWidth = 0;
             for (const part of subtitleParts) {
-                const font = part.formatting && part.formatting.bold ? 
-                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` : 
+                const font = part.formatting && part.formatting.bold ?
+                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` :
                     `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`;
                 ctx.font = font;
                 totalSubtitleWidth += ctx.measureText(part.text).width;
             }
 
             // Draw subtitle parts centered
-            let subtitleX = CONFIG.SLIDE_SIZE / 2 - totalSubtitleWidth / 2;
+            let subtitleX = width / 2 - totalSubtitleWidth / 2;
             for (const part of subtitleParts) {
-                const font = part.formatting && part.formatting.bold ? 
-                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` : 
+                const font = part.formatting && part.formatting.bold ?
+                    `bold ${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}` :
                     `${settings.fontSize * 0.8}px ${CONFIG.FONT_FAMILY}`;
                 ctx.font = font;
                 ctx.fillText(part.text, subtitleX + ctx.measureText(part.text).width / 2, currentY + 70);
@@ -631,9 +467,9 @@ export class SlideGenerator {
     /**
      * Draw author image with circular crop
      */
-    drawAuthorImage(ctx, authImage, currentY) {
+    drawAuthorImage(ctx, authImage, currentY, width) {
         const imgSize = 300;
-        const imgX = CONFIG.SLIDE_SIZE / 2 - imgSize / 2;
+        const imgX = width / 2 - imgSize / 2;
         const imgY = currentY - imgSize - 10;
 
         // Calculate crop for cover effect
@@ -655,7 +491,7 @@ export class SlideGenerator {
         // Draw circular clipped image
         ctx.save();
         ctx.beginPath();
-        ctx.arc(CONFIG.SLIDE_SIZE / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+        ctx.arc(width / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
         ctx.drawImage(authImage, sx, sy, sWidth, sHeight, imgX, imgY, imgSize, imgSize);
@@ -667,19 +503,23 @@ export class SlideGenerator {
     /**
      * Draw content slide
      */
-    drawContentSlide(ctx, slideContent, settings) {
-        let y = settings.padding;
+    drawContentSlide(ctx, slideContent, settings, width, height) {
+        const safeZone = CONFIG.SAFE_ZONES[settings.format] || CONFIG.SAFE_ZONES.post;
+        let y = settings.padding + safeZone.top;
+
         ctx.save();
         ctx.font = `${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         ctx.direction = 'rtl';
 
+        const rightMargin = settings.padding + safeZone.side;
+
         for (const item of slideContent) {
             if (item.type === 'heading') {
                 const fontSize = settings.fontSize * (item.level === 1 ? 1.5 : item.level === 2 ? 1.3 : 1.2);
                 ctx.font = `bold ${fontSize}px ${CONFIG.FONT_FAMILY}`;
-                ctx.fillText(item.text, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(item.text, width - rightMargin, y);
                 y += fontSize * settings.lineHeightMultiplier;
                 ctx.font = `${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
             } else if (item.type === 'body' || item.type === 'list') {
@@ -687,13 +527,13 @@ export class SlideGenerator {
                 if (item.useBullet && item.isFirstLineOfPara) {
                     text = `${settings.bulletChar} ${text}`;
                 }
-                ctx.fillText(text, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(text, width - rightMargin, y);
                 y += settings.fontSize * settings.lineHeightMultiplier;
             } else if (item.type === 'quote') {
                 ctx.save();
                 ctx.fillStyle = COLOR_THEMES[this.currentTheme]?.accent || '#6c757d';
                 ctx.font = `italic ${settings.fontSize}px ${CONFIG.FONT_FAMILY}`;
-                ctx.fillText(`"${item.text}"`, CONFIG.SLIDE_SIZE - settings.padding, y);
+                ctx.fillText(`"${item.text}"`, width - rightMargin, y);
                 ctx.restore();
                 y += settings.fontSize * settings.lineHeightMultiplier;
             } else if (item.type === 'spacer') {
@@ -706,20 +546,21 @@ export class SlideGenerator {
     /**
      * Draw footer with progress bar
      */
-    drawFooter(ctx, currentSlideIndex, totalSlides, settings) {
+    drawFooter(ctx, currentSlideIndex, totalSlides, settings, width, height) {
         const theme = COLOR_THEMES[this.currentTheme] || COLOR_THEMES['minimal_clean'];
-        
+        const safeZone = CONFIG.SAFE_ZONES[settings.format] || CONFIG.SAFE_ZONES.post;
+
         ctx.save();
         ctx.font = `${settings.fontSize * 0.7}px ${CONFIG.FONT_FAMILY}`;
         ctx.fillStyle = settings.textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
 
-        let footerY = CONFIG.SLIDE_SIZE - settings.padding / 2;
+        let footerY = height - (settings.padding / 2) - safeZone.bottom;
 
         // Draw footer text
         if (settings.footerText) {
-            ctx.fillText(settings.footerText, CONFIG.SLIDE_SIZE / 2, footerY);
+            ctx.fillText(settings.footerText, width / 2, footerY);
             footerY -= settings.fontSize * 0.8;
         }
 
@@ -728,17 +569,17 @@ export class SlideGenerator {
         ctx.globalAlpha = 0.7;
         ctx.fillText(
             `${toPersianNum(currentSlideIndex + 1)} / ${toPersianNum(totalSlides)}`,
-            CONFIG.SLIDE_SIZE / 2,
-            CONFIG.SLIDE_SIZE - 20
+            width / 2,
+            height - 20 - safeZone.bottom
         );
         ctx.globalAlpha = 1.0;
 
         // Draw progress bar
-        const barWidth = CONFIG.SLIDE_SIZE - 2 * settings.padding;
+        const barWidth = width - 2 * (settings.padding + safeZone.side);
         const barHeight = 12;
         const progress = totalSlides > 1 ? (currentSlideIndex + 1) / totalSlides : 1;
-        const barX = settings.padding;
-        const barY = CONFIG.SLIDE_SIZE - 12;
+        const barX = settings.padding + safeZone.side;
+        const barY = height - 12 - safeZone.bottom;
 
         // Background
         ctx.globalAlpha = 0.18;
@@ -765,7 +606,7 @@ export class SlideGenerator {
 
         const settings = this.getSettings();
         const button = document.querySelector('button[onclick="slideGenerator.downloadAllSlides()"]');
-        
+
         if (!button) return;
 
         const originalText = button.innerHTML;
@@ -774,7 +615,7 @@ export class SlideGenerator {
         try {
             for (let i = 0; i < this.generatedSlides.length; i++) {
                 button.innerHTML = `در حال آماده‌سازی اسلاید ${toPersianNum(i + 1)}...`;
-                
+
                 const dataURL = await this.createSlide(
                     this.generatedSlides[i],
                     this.generatedSlides.length,
@@ -786,14 +627,14 @@ export class SlideGenerator {
                 const response = await fetch(dataURL);
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
-                
+
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = `slide_${String(i + 1).padStart(2, '0')}.png`;
                 link.click();
-                
+
                 URL.revokeObjectURL(url);
-                
+
                 // Small delay to prevent overwhelming the browser
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
@@ -826,7 +667,7 @@ export class SlideGenerator {
     getStats() {
         const settings = this.getSettings();
         const outline = this.textProcessor.extractOutline(settings.text);
-        
+
         return {
             wordCount: this.textProcessor.countWords(settings.text),
             readingTime: this.textProcessor.estimateReadingTime(settings.text),

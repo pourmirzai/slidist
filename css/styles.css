@@ -591,23 +591,21 @@ textarea:focus-visible,
 @media (prefers-contrast: high) {
     :root {
         --border-color: #000000;
-        --text-color: #000000;
-        --bg-light: #ffffff;
-    }
+    margin-top: 5px;
 }
 
-/* Print styles */
-@media print {
-    body {
-        background: white;
-    }
-    
-    .container {
-        box-shadow: none;
-        border: 1px solid #000;
-    }
-    
-    button {
-        display: none;
-    }
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: normal;
+    font-size: var(--font-size-base);
+}
+
+.radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
 }
