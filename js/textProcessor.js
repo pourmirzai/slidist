@@ -215,13 +215,13 @@ export class TextProcessor {
                     });
                 });
             } else if (trimmedLine !== '') {
-                // Regular paragraph
+                // Regular paragraph - treat as list item when bullets are enabled
                 const effectiveWidth = contentWidth - (useBullets ? getTextWidth(tempCtx, `${bulletChar} `, `${fontSize}px ${CONFIG.FONT_FAMILY}`) : 0);
                 const wrappedLines = this.textWrap(tempCtx, trimmedLine, effectiveWidth, fontSize);
                 
                 wrappedLines.forEach((paraLine, index) => {
                     allLines.push({
-                        type: 'body',
+                        type: useBullets ? 'list' : 'body',
                         text: paraLine,
                         isFirstLineOfPara: index === 0,
                         useBullet: useBullets

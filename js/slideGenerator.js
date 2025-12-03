@@ -127,6 +127,18 @@ export class SlideGenerator {
      * Get current settings from UI
      */
     getSettings() {
+        const bulletSelect = document.getElementById('bulletSelect');
+        const customBulletInput = document.getElementById('customBulletInput');
+        
+        let bulletChar = '•';
+        if (bulletSelect) {
+            if (bulletSelect.value === 'custom' && customBulletInput) {
+                bulletChar = customBulletInput.value || '•';
+            } else {
+                bulletChar = bulletSelect.value || '•';
+            }
+        }
+        
         return {
             text: document.getElementById('inputText').value,
             fontSize: parseInt(document.getElementById('fontSize').value) || CONFIG.DEFAULT_FONT_SIZE,
@@ -139,13 +151,14 @@ export class SlideGenerator {
             subtitleText: document.getElementById('subtitleText').value,
             footerText: document.getElementById('footerText').value,
             bgOpacity: parseFloat(document.getElementById('bgImageOpacity').value) || 0.3,
-            bgImage: this.imageHandler.bgImage,
-            authImage: this.imageHandler.authImage,
+            bgImage: this.imageHandler.backgroundImage,
+            authImage: this.imageHandler.authorImage,
             bgImageMode: document.getElementById('bgImageMode')?.value || 'cover-center',
             theme: this.currentTheme,
             format: document.querySelector('input[name="slideFormat"]:checked')?.value || 'post',
-            bulletChar: document.getElementById('bulletChar')?.value || '•',
-            lineHeightMultiplier: parseFloat(document.getElementById('lineHeight')?.value) || 1.6
+            bulletChar: bulletChar,
+            lineHeightMultiplier: parseFloat(document.getElementById('lineHeight')?.value) || 1.6,
+            useBullets: document.getElementById('useBullets')?.checked || false
         };
     }
 

@@ -1,3 +1,12 @@
+[2025-12-03] - Fixed cover slide image display issue
+
+Changed Files:
+- js/slideGenerator.js
+
+Changes:
+- Fixed property name mismatch that prevented author's photo and cover background from displaying on title slides.
+- Corrected `bgImage` and `authImage` references to match actual ImageHandler properties (`backgroundImage` and `authorImage`).
+
 [2025-12-03] - Critical Bug Fixes and UI/UX Improvements
 
 Changed Files:
