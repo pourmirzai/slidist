@@ -380,6 +380,13 @@ export class TextProcessor {
     }
 
     /**
+     * Count characters in text
+     */
+    countCharacters(text) {
+        return text.length;
+    }
+
+    /**
      * Estimate reading time
      */
     estimateReadingTime(text, wordsPerMinute = 200) {

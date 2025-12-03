@@ -32,17 +32,17 @@
         <!-- Tab Navigation -->
         <div class="tabs-container">
             <div class="tabs-nav" role="tablist">
-                <button class="tab-button active" data-tab="content" role="tab" aria-selected="true">
+                <button class="tab-button active" data-tab="title" role="tab" aria-selected="true">
+                    <span class="tab-icon">🏷️</span>
+                    <span>اسلاید عنوان</span>
+                </button>
+                <button class="tab-button" data-tab="content" role="tab" aria-selected="false">
                     <span class="tab-icon">📝</span>
                     <span>محتوا</span>
                 </button>
                 <button class="tab-button" data-tab="design" role="tab" aria-selected="false">
                     <span class="tab-icon">🎨</span>
                     <span>طراحی</span>
-                </button>
-                <button class="tab-button" data-tab="title" role="tab" aria-selected="false">
-                    <span class="tab-icon">🏷️</span>
-                    <span>اسلاید عنوان</span>
                 </button>
                 <button class="tab-button" data-tab="advanced" role="tab" aria-selected="false">
                     <span class="tab-icon">⚙️</span>
@@ -54,8 +54,78 @@
                 </button>
             </div>
 
-            <!-- Tab 1: Content -->
-            <div class="tab-content active" id="content-tab" role="tabpanel">
+            <!-- Tab 1: Title Slide -->
+            <div class="tab-content active" id="title-tab" role="tabpanel">
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🏷️</span>
+                        عنوان و زیرنویس
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item full-width">
+                            <label for="titleText">عنوان اصلی:</label>
+                            <input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..."
+                                autocomplete="off">
+                        </div>
+
+                        <div class="control-item full-width">
+                            <label for="subtitleText">زیرنویس (اختیاری):</label>
+                            <input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..."
+                                autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">
+                        <span class="icon">🖼️</span>
+                        تصاویر
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-item">
+                            <label for="authorImageFile">عکس نویسنده (اختیاری):</label>
+                            <input type="file" id="authorImageFile" accept="image/*" aria-describedby="authorImageHelp">
+                            <div id="authorDropZone" class="drop-zone">
+                                یا تصویر را اینجا بکشید و رها کنید
+                            </div>
+                            <small id="authorImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageFile">تصویر پس‌زمینه:</label>
+                            <input type="file" id="bgImageFile" accept="image/*" aria-describedby="bgImageHelp">
+                            <div id="bgDropZone" class="drop-zone">
+                                یا تصویر را اینجا بکشید و رها کنید
+                            </div>
+                            <small id="bgImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label>
+                            <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"
+                                aria-describedby="opacityHelp">
+                            <small id="opacityHelp">تنظیم شفافیت تصویر پس‌زمینه</small>
+                        </div>
+
+                        <div class="control-item">
+                            <label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
+                            <select id="bgImageMode" aria-describedby="bgModeHelp">
+                                <option value="cover-center">وسط وسط (Cover)</option>
+                                <option value="cover-top">وسط بالا (Cover)</option>
+                                <option value="cover-bottom">وسط پایین (Cover)</option>
+                                <option value="contain">تمام تصویر (Contain)</option>
+                                <option value="stretch">کشیده (Stretch)</option>
+                            </select>
+                            <small id="bgModeHelp">نحوه نمایش تصویر پس‌زمینه</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Content -->
+            <div class="tab-content" id="content-tab" role="tabpanel">
                 <div class="section-card">
                     <div class="section-title">
                         <span class="icon">✍️</span>
@@ -93,41 +163,9 @@
                     </small>
                 </div>
 
-                <div class="section-card">
-                    <div class="section-title">
-                        <span class="icon">🔹</span>
-                        تنظیمات بولت
-                    </div>
-
-                    <div class="controls">
-                        <div class="control-item checkbox-control">
-                            <input type="checkbox" id="useBullets" checked aria-describedby="bulletsHelp">
-                            <label for="useBullets">استفاده از بولت</label>
-                        </div>
-
-                        <div class="control-item">
-                            <label for="bulletSelect">انتخاب نوع بولت:</label>
-                            <select id="bulletSelect">
-                                <option value="✅">✅ تیک سبز</option>
-                                <option value="🔹">🔹 لوزی آبی</option>
-                                <option value="⚫️">⚫️ دایره سیاه</option>
-                                <option value="➡️">➡️ فلش</option>
-                                <option value="🔸">🔸 لوزی نارنجی</option>
-                                <option value="📌">📌 پین</option>
-                                <option value="⭐">⭐ ستاره</option>
-                                <option value="custom">سفارشی...</option>
-                            </select>
-                            <input type="text" id="customBulletInput" placeholder="بولت سفارشی"
-                                style="display: none; margin-top: 8px;">
-                        </div>
-                    </div>
-                    <small id="bulletsHelp" style="display: block; margin-top: 10px; color: var(--text-muted);">
-                        نمایش نقطه یا نماد در ابتدای هر خط
-                    </small>
-                </div>
             </div>
 
-            <!-- Tab 2: Design -->
+            <!-- Tab 3: Design -->
             <div class="tab-content" id="design-tab" role="tabpanel">
                 <div class="section-card">
                     <div class="section-title">
@@ -201,75 +239,38 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Tab 3: Title Slide -->
-            <div class="tab-content" id="title-tab" role="tabpanel">
-                <div class="section-card">
-                    <div class="section-title">
-                        <span class="icon">🏷️</span>
-                        عنوان و زیرنویس
-                    </div>
-
-                    <div class="controls">
-                        <div class="control-item full-width">
-                            <label for="titleText">عنوان اصلی:</label>
-                            <input type="text" id="titleText" placeholder="عنوان اصلی را وارد کنید..."
-                                autocomplete="off">
-                        </div>
-
-                        <div class="control-item full-width">
-                            <label for="subtitleText">زیرنویس (اختیاری):</label>
-                            <input type="text" id="subtitleText" placeholder="متن زیرنویس را وارد کنید..."
-                                autocomplete="off">
-                        </div>
-                    </div>
-                </div>
 
                 <div class="section-card">
                     <div class="section-title">
-                        <span class="icon">🖼️</span>
-                        تصاویر
+                        <span class="icon">🔹</span>
+                        تنظیمات بولت
                     </div>
 
                     <div class="controls">
-                        <div class="control-item">
-                            <label for="authorImageFile">عکس نویسنده (اختیاری):</label>
-                            <input type="file" id="authorImageFile" accept="image/*" aria-describedby="authorImageHelp">
-                            <div id="authorDropZone" class="drop-zone">
-                                یا تصویر را اینجا بکشید و رها کنید
-                            </div>
-                            <small id="authorImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
+                        <div class="control-item checkbox-control">
+                            <input type="checkbox" id="useBullets" checked aria-describedby="bulletsHelp">
+                            <label for="useBullets">استفاده از بولت</label>
                         </div>
 
                         <div class="control-item">
-                            <label for="bgImageFile">تصویر پس‌زمینه:</label>
-                            <input type="file" id="bgImageFile" accept="image/*" aria-describedby="bgImageHelp">
-                            <div id="bgDropZone" class="drop-zone">
-                                یا تصویر را اینجا بکشید و رها کنید
-                            </div>
-                            <small id="bgImageHelp">حداکثر ۱۰ مگابایت - فرمت‌های JPG, PNG, WebP</small>
-                        </div>
-
-                        <div class="control-item">
-                            <label for="bgImageOpacity">شفافیت تصویر: <span id="opacityValue">0.3</span></label>
-                            <input type="range" id="bgImageOpacity" min="0" max="1" step="0.05" value="0.3"
-                                aria-describedby="opacityHelp">
-                            <small id="opacityHelp">تنظیم شفافیت تصویر پس‌زمینه</small>
-                        </div>
-
-                        <div class="control-item">
-                            <label for="bgImageMode">حالت تصویر پس‌زمینه:</label>
-                            <select id="bgImageMode" aria-describedby="bgModeHelp">
-                                <option value="cover-center">وسط وسط (Cover)</option>
-                                <option value="cover-top">وسط بالا (Cover)</option>
-                                <option value="cover-bottom">وسط پایین (Cover)</option>
-                                <option value="contain">تمام تصویر (Contain)</option>
-                                <option value="stretch">کشیده (Stretch)</option>
+                            <label for="bulletSelect">انتخاب نوع بولت:</label>
+                            <select id="bulletSelect">
+                                <option value="✅">✅ تیک سبز</option>
+                                <option value="🔹">🔹 لوزی آبی</option>
+                                <option value="⚫️">⚫️ دایره سیاه</option>
+                                <option value="➡️">➡️ فلش</option>
+                                <option value="🔸">🔸 لوزی نارنجی</option>
+                                <option value="📌">📌 پین</option>
+                                <option value="⭐">⭐ ستاره</option>
+                                <option value="custom">سفارشی...</option>
                             </select>
-                            <small id="bgModeHelp">نحوه نمایش تصویر پس‌زمینه</small>
+                            <input type="text" id="customBulletInput" placeholder="بولت سفارشی"
+                                style="display: none; margin-top: 8px;">
                         </div>
                     </div>
+                    <small id="bulletsHelp" style="display: block; margin-top: 10px; color: var(--text-muted);">
+                        نمایش نقطه یا نماد در ابتدای هر خط
+                    </small>
                 </div>
             </div>
 

@@ -81,10 +81,27 @@ export class SlideGenerator {
         themeContainer.innerHTML = '';
         Object.entries(COLOR_THEMES).forEach(([key, theme]) => {
             const btn = document.createElement('div');
-            btn.className = `theme-option ${this.currentTheme === key ? 'active' : ''}`;
-            btn.style.background = `linear-gradient(135deg, ${theme.bg1}, ${theme.bg2})`;
+            btn.className = `theme-preview ${this.currentTheme === key ? 'selected' : ''}`;
             btn.title = theme.name;
             btn.onclick = () => this.applyTheme(key);
+
+            const colorsDiv = document.createElement('div');
+            colorsDiv.className = 'colors';
+            colorsDiv.style.background = `linear-gradient(135deg, ${theme.bg1}, ${theme.bg2})`;
+
+            const textSample = document.createElement('div');
+            textSample.className = 'text-sample';
+            textSample.textContent = 'Aa';
+            textSample.style.color = theme.text;
+            colorsDiv.appendChild(textSample);
+
+            btn.appendChild(colorsDiv);
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'theme-name';
+            nameDiv.textContent = theme.name;
+            btn.appendChild(nameDiv);
+
             themeContainer.appendChild(btn);
         });
     }
@@ -264,6 +281,13 @@ export class SlideGenerator {
 
         // Show final preview
         previewDiv.innerHTML = `
+            <div id="preview-stats" style="margin-bottom: 20px; padding: 15px; background: var(--bg-light); border-radius: var(--border-radius);">
+                <h3>آمار محتوا</h3>
+                <div>تعداد کلمات: <strong><span id="preview-wordCount">0</span></strong></div>
+                <div>تعداد کاراکترها: <strong><span id="preview-charCount">0</span></strong></div>
+                <div>زمان تقریبی مطالعه: <strong><span id="preview-readingTime">0</span></strong> دقیقه</div>
+                <div>تعداد اسلایدهای تولیدی: <strong><span id="preview-slideCount">0</span></strong></div>
+            </div>
             <h2>پیش‌نمایش (${toPersianNum(previewLimit)} اسلاید از ${toPersianNum(this.generatedSlides.length)})</h2>
             <p>برای بزرگنمایی روی هر اسلاید کلیک کنید.</p>
             <div class="preview-container">${slidePreviewsHTML}</div>
@@ -276,6 +300,13 @@ export class SlideGenerator {
                 </button>
             </div>
         `;
+
+        // Update statistics display
+        const stats = this.getStats();
+        document.getElementById('preview-wordCount').textContent = stats.wordCount;
+        document.getElementById('preview-charCount').textContent = stats.characterCount;
+        document.getElementById('preview-readingTime').textContent = stats.readingTime;
+        document.getElementById('preview-slideCount').textContent = stats.slideCount;
 
         // Add lightbox event listeners for images
         this.setupLightboxImages();
@@ -715,6 +746,7 @@ export class SlideGenerator {
 
         return {
             wordCount: this.textProcessor.countWords(settings.text),
+            characterCount: this.textProcessor.countCharacters(settings.text),
             readingTime: this.textProcessor.estimateReadingTime(settings.text),
             slideCount: this.generatedSlides.length,
             outline: outline,
