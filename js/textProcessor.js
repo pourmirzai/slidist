@@ -160,10 +160,12 @@ export class TextProcessor {
      * Parse and structure content with enhanced pagination
      */
     parseAndStructureContent(settings) {
-        const { text, useBullets, bulletChar, fontSize, padding, lineHeightMultiplier } = settings;
+        const { text, useBullets, bulletChar, fontSize, padding, lineHeightMultiplier, format } = settings;
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        const contentWidth = CONFIG.SLIDE_SIZE - 2 * padding;
+        const formatConfig = CONFIG.SLIDE_FORMATS[format] || CONFIG.SLIDE_FORMATS.post;
+        const safeZone = CONFIG.SAFE_ZONES[format] || CONFIG.SAFE_ZONES.post;
+        const contentWidth = formatConfig.width - 2 * (padding + safeZone.side);
         
         const allLines = [];
         const rawLines = text.split('\n');
@@ -238,14 +240,17 @@ export class TextProcessor {
      * Enhanced pagination with better slide breaks
      */
     paginateContent(allLines, settings) {
-        const { fontSize, padding, lineHeightMultiplier } = settings;
+        const { fontSize, padding, lineHeightMultiplier, format } = settings;
         const finalSlides = [];
-        
+
         if (allLines.length === 0) return finalSlides;
-        
+
+        const formatConfig = CONFIG.SLIDE_FORMATS[format] || CONFIG.SLIDE_FORMATS.post;
+        const safeZone = CONFIG.SAFE_ZONES[format] || CONFIG.SAFE_ZONES.post;
+        const maxContentHeight = formatConfig.height - safeZone.top - safeZone.bottom - 100; // Leave space for footer
+        let currentY = padding + safeZone.top;
+
         let currentSlide = [];
-        const maxContentHeight = CONFIG.SLIDE_SIZE - padding - 80;
-        let currentY = padding;
         
         const getItemHeight = (item) => {
             switch (item.type) {

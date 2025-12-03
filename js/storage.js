@@ -73,27 +73,6 @@ export class StorageManager {
         }
     }
 
-    /**
-     * Export settings as JSON file
-     */
-    exportSettings(settings) {
-        try {
-            const dataStr = JSON.stringify(settings, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `slidist-settings-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            showToast('تنظیمات صادر شد', 'success');
-            return true;
-        } catch (error) {
-            console.error('Failed to export settings:', error);
-            showToast('خطا در صادر کردن تنظیمات', 'error');
-            return false;
-        }
-    }
 
     /**
      * Import settings from JSON file

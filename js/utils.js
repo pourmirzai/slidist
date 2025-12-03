@@ -27,7 +27,8 @@ export const debounce = (func, wait) => {
  * Validate image file type
  */
 export const isValidImageType = (file) => {
-    return CONFIG.SUPPORTED_IMAGE_TYPES.includes(file.type);
+    if (!file || !file.type) return false;
+    return CONFIG.ALLOWED_IMAGE_TYPES.includes(file.type);
 };
 
 /**

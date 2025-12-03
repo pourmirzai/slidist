@@ -23,6 +23,7 @@ export class SlideGenerator {
         this.setupEventListeners();
         this.setupThemeSelector();
         this.imageHandler.setupDragAndDrop();
+        this.setupLightboxGlobal();
         this.loadSettings();
 
         showToast('اسلایدساز آماده است', 'success');
@@ -40,7 +41,7 @@ export class SlideGenerator {
         ];
 
         const saveHandler = debounce(() => {
-            this.exportSettings();
+            this.storageManager.saveSettings(this.getSettings());
         }, 1000);
 
         inputs.forEach(id => {
@@ -98,7 +99,7 @@ export class SlideGenerator {
         document.getElementById('textColor').value = theme.text;
 
         this.setupThemeSelector(); // Re-render to update active state
-        this.exportSettings();
+        this.storageManager.saveSettings(this.getSettings());
     }
 
     setupAutoSave() {
@@ -175,13 +176,6 @@ export class SlideGenerator {
         }
     }
 
-    /**
-     * Export settings
-     */
-    exportSettings() {
-        const settings = this.getSettings();
-        this.storageManager.exportSettings(settings);
-    }
 
     /**
      * Import settings
@@ -283,7 +277,58 @@ export class SlideGenerator {
             </div>
         `;
 
+        // Add lightbox event listeners for images
+        this.setupLightboxImages();
+
         showToast('پیش‌نمایش آماده شد', 'success');
+    }
+
+    /**
+     * Setup global lightbox event listeners (called once on init)
+     */
+    setupLightboxGlobal() {
+        const lightbox = document.getElementById('lightbox');
+        const closeBtn = document.getElementById('closeLightbox');
+
+        // Close lightbox on close button click
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                lightbox.classList.remove('show');
+            });
+        }
+
+        // Close lightbox on background click
+        if (lightbox) {
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) {
+                    lightbox.classList.remove('show');
+                }
+            });
+        }
+
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && lightbox.classList.contains('show')) {
+                lightbox.classList.remove('show');
+            }
+        });
+    }
+
+    /**
+     * Setup lightbox event listeners for preview images
+     */
+    setupLightboxImages() {
+        const previewImages = document.querySelectorAll('.preview-container img');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+
+        // Open lightbox on image click
+        previewImages.forEach(img => {
+            img.addEventListener('click', () => {
+                lightboxImg.src = img.src;
+                lightbox.classList.add('show');
+            });
+        });
     }
 
     /**
