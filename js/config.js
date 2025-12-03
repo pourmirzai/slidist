@@ -1,5 +1,8 @@
 // Global configuration and constants
 export const CONFIG = {
+    // Storage key for localStorage
+    STORAGE_KEY: 'slidist-settings',
+
     // Slide formats
     SLIDE_FORMATS: {
         post: { width: 1080, height: 1080, name: 'پست (۱:۱)' },

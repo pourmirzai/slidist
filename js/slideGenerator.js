@@ -3,7 +3,7 @@ import { CONFIG, COLOR_THEMES } from './config.js';
 import { StorageManager } from './storage.js';
 import { ImageHandler } from './imageHandler.js';
 import { TextProcessor } from './textProcessor.js';
-import { toPersianNum, showToast, debounce } from './utils.js';
+import { toPersianNum, showToast, debounce, calculateReadingTime } from './utils.js';
 
 export class SlideGenerator {
     constructor() {
@@ -246,7 +246,9 @@ export class SlideGenerator {
 
             // Add title slide if needed
             if (settings.titleText) {
-                this.generatedSlides.unshift({ type: 'title' });
+                // Calculate reading time for the content
+                const readingTime = calculateReadingTime(settings.text);
+                this.generatedSlides.unshift({ type: 'title', readingTime: readingTime });
             }
 
             if (this.generatedSlides.length === 0) {
@@ -406,7 +408,7 @@ export class SlideGenerator {
 
         // Draw content based on slide type
         if (slideContent.type === 'title') {
-            this.drawTitleSlide(ctx, settings, width, height);
+            this.drawTitleSlide(ctx, settings, width, height, slideContent.readingTime);
         } else {
             this.drawContentSlide(ctx, slideContent, settings, width, height);
         }
@@ -461,7 +463,7 @@ export class SlideGenerator {
     /**
      * Draw title slide with enhanced layout
      */
-    drawTitleSlide(ctx, settings, width, height) {
+    drawTitleSlide(ctx, settings, width, height, readingTime) {
         const theme = COLOR_THEMES[this.currentTheme] || COLOR_THEMES['minimal_clean'];
         const safeZone = CONFIG.SAFE_ZONES[settings.format] || CONFIG.SAFE_ZONES.post;
 
@@ -473,6 +475,11 @@ export class SlideGenerator {
 
         if (settings.subtitleText) {
             currentY -= 50;
+        }
+        
+        // Adjust for reading time display
+        if (readingTime) {
+            currentY -= 20;
         }
 
         // Draw author image if available
@@ -549,6 +556,22 @@ export class SlideGenerator {
                 ctx.fillText(part.text, subtitleX + ctx.measureText(part.text).width / 2, currentY + 70);
                 subtitleX += ctx.measureText(part.text).width;
             }
+            ctx.restore();
+        }
+        
+        // Draw reading time below subtitle or title
+        if (readingTime) {
+            ctx.save();
+            ctx.font = `${settings.fontSize * 0.6}px ${CONFIG.FONT_FAMILY}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = settings.textColor;
+            ctx.globalAlpha = 0.7;
+            
+            const readingTimeY = settings.subtitleText ? currentY + 110 : currentY + 60;
+            ctx.fillText(`📖 ${readingTime}`, width / 2, readingTimeY);
+            
+            ctx.globalAlpha = 1.0;
             ctx.restore();
         }
     }

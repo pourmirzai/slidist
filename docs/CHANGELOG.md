@@ -1,3 +1,31 @@
+[2025-12-03] - Added reading time display on cover slide
+
+Changed Files:
+- js/utils.js
+- js/slideGenerator.js
+
+Changes:
+- Added `calculateReadingTime` utility function to calculate approximate reading time based on 200 WPM
+- Modified `drawTitleSlide` method to accept and display reading time on the cover slide
+- Integrated reading time calculation in `previewSlides` method before generating the title slide
+- Reading time is displayed below the subtitle (or title if no subtitle) with a book emoji icon
+
+[2025-12-03] - Removed Advanced section from application
+
+Changed Files:
+- index.html
+- js/config.js
+
+Changes:
+- Completely removed the "Advanced" tab and all its UI components from the application
+- Removed the "Advanced" tab button from the navigation
+- Removed the "Content Statistics" section that displayed word count, reading time, and slide count
+- Removed the "Settings Management" section that included import/export and clear settings functionality
+- Removed JavaScript event listeners for updating content stats in real-time
+- Added missing STORAGE_KEY to CONFIG object for proper storage functionality
+- Application now has 4 tabs instead of 5: Title, Content, Design, and Help
+- All remaining functionality preserved and working correctly
+
 [2025-12-03] - Fixed cover slide image display issue
 
 Changed Files:

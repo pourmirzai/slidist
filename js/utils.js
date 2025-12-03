@@ -88,6 +88,27 @@ export const isMobile = () => {
 /**
  * Show toast notification
  */
+/**
+ * Calculate approximate reading time for content
+ * @param {string} text - The raw content text
+ * @param {number} wpm - Words per minute (default: 200)
+ * @returns {string} Formatted reading time string in Persian
+ */
+export const calculateReadingTime = (text, wpm = 200) => {
+    if (!text || typeof text !== 'string') return '۰ دقیقه مطالعه';
+    
+    // Count words (handles both Persian and English)
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const wordCount = words.length;
+    
+    // Calculate minutes
+    const minutes = Math.ceil(wordCount / wpm);
+    
+    // Convert to Persian and format
+    const persianMinutes = toPersianNum(minutes);
+    return `${persianMinutes} دقیقه مطالعه`;
+};
+
 export const showToast = (message, type = 'info', duration = 3000) => {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;

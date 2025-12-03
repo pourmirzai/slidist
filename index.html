@@ -44,10 +44,7 @@
                     <span class="tab-icon">🎨</span>
                     <span>طراحی</span>
                 </button>
-                <button class="tab-button" data-tab="advanced" role="tab" aria-selected="false">
-                    <span class="tab-icon">⚙️</span>
-                    <span>پیشرفته</span>
-                </button>
+
                 <button class="tab-button" data-tab="help" role="tab" aria-selected="false">
                     <span class="tab-icon">❓</span>
                     <span>راهنما</span>
@@ -274,43 +271,7 @@
                 </div>
             </div>
 
-            <!-- Tab 4: Advanced -->
-            <div class="tab-content" id="advanced-tab" role="tabpanel">
-                <div class="section-card">
-                    <div class="section-title">
-                        <span class="icon">📊</span>
-                        آمار محتوا
-                    </div>
 
-                    <div id="contentStats"
-                        style="background: var(--bg-light); padding: 15px; border-radius: var(--border-radius); font-size: 14px;">
-                        <div style="margin-bottom: 8px;">تعداد کلمات: <strong><span id="wordCount">0</span></strong>
-                        </div>
-                        <div style="margin-bottom: 8px;">زمان تقریبی مطالعه: <strong><span
-                                    id="readingTime">0</span></strong> دقیقه</div>
-                        <div>تعداد اسلایدهای تولیدی: <strong><span id="slideCount">0</span></strong></div>
-                    </div>
-                </div>
-
-                <div class="section-card">
-                    <div class="section-title">
-                        <span class="icon">💾</span>
-                        مدیریت تنظیمات
-                    </div>
-
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="file" id="importSettings" accept=".json" style="display: none;">
-                        <button type="button" onclick="document.getElementById('importSettings').click()"
-                            class="btn-secondary" style="padding: 10px 20px; font-size: 14px;">
-                            📥 وارد کردن تنظیمات
-                        </button>
-                        <button type="button" onclick="slideGenerator.storageManager.clearSettings()" class="btn-danger"
-                            style="padding: 10px 20px; font-size: 14px;">
-                            🗑️ پاک کردن تنظیمات
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <!-- Tab 5: Help -->
             <div class="tab-content" id="help-tab" role="tabpanel">
@@ -417,25 +378,7 @@
         });
     </script>
 
-    <!-- Import settings handler -->
-    <script>
-        document.getElementById('importSettings').addEventListener('change', async (e) => {
-            if (e.target.files && e.target.files[0]) {
-                await window.slideGenerator.importSettings(e.target.files[0]);
-                e.target.value = ''; // Reset file input
-            }
-        });
 
-        // Update content stats on text change
-        document.getElementById('inputText').addEventListener('input', () => {
-            if (window.slideGenerator) {
-                const stats = window.slideGenerator.getStats();
-                document.getElementById('wordCount').textContent = stats.wordCount;
-                document.getElementById('readingTime').textContent = stats.readingTime;
-                document.getElementById('slideCount').textContent = stats.slideCount;
-            }
-        });
-    </script>
 
     <!-- Service Worker for offline support -->
     <script>
